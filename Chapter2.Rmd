@@ -1,0 +1,50 @@
+---
+title: "Chapter 2"
+author: "Julin Maloof"
+date: "2022-08-25"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Qyuz
+
+1. What are the three properties of a vector, other than its contents? _length, type, ??_
+2. What are the four common types of atomic vectors?  What are the two rare types? _Common: numeric, character, boolean, factor; Rare: integer, some single point precicion thing?_
+3. What are attributes? How do you get them and set them?  _attributes define the data structure type.  can use `attr()` or `attributes()`
+4. How is a list different from an atomic vector?  How is a matrix different from a data frame? _atomic vectors and matrices can only have a single data type per instance, whereas lists and data frames can mix them_
+5. Can you have a list that is a matrix? Can a data frame have a column that is a matrix? _I am not sure what this is asking.  You can have a list that contains a matrix and similarly a dataframe column can contain a mstrix.  But I do not think you can have 2D lists.  Probably could have a matrix of lists_
+
+Note that I did not get all (or any?) of these fully correct, see the [answers](http://adv-r.had.co.nz/Data-structures.html#data-structure-answers)
+
+## Exercisess 1
+
+### 1. What are the six types of atomic vector? How does a list differ from an atomic vector?
+
+character, logical, integer, double, raw, complex
+
+list can have different data types
+
+### 2. What makes is.vector() and is.numeric() fundamentally different to is.list() and is.character()?
+
+
+
+### 3. Test your knowledge of vector coercion rules by predicting the output of the following uses of c():
+
+c(1, FALSE)
+c("a", 1)
+c(list(1), "a")
+c(TRUE, 1L)
+
+### 4. Why do you need to use unlist() to convert a list to an atomic vector? Why doesn’t as.vector() work?
+
+### 5. Why is 1 == "1" true? Why is -1 < FALSE true? Why is "one" < 2 false?
+
+#### 6. Why is the default missing value, NA, a logical vector? What’s special about logical vectors? (Hint: think about c(FALSE, NA_character_).)
+
+
+
