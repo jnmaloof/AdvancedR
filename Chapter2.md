@@ -7,9 +7,7 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Quiz
 
@@ -59,9 +57,21 @@ Why is -1 < FALSE true? _because FALSE gets coerced to 0_
 
 Why is "one" < 2 false? _because 2 gets coerced to "2" and the ordering is alphabetic
 
-```{r}
+
+```r
 "a" < "b"
+```
+
+```
+## [1] TRUE
+```
+
+```r
 "b" < "a"
+```
+
+```
+## [1] FALSE
 ```
 
 
@@ -74,20 +84,53 @@ _logical vectors can be coerced to any other type_
 ### 1 
 An early draft used this code to illustrate structure():
 
-```{r}
+
+```r
 structure(1:5, comment = "my attribute")
+```
+
+```
+## [1] 1 2 3 4 5
 ```
 But when you print that object you don’t see the comment attribute. Why? Is the attribute missing, or is there something else special about it? (Hint: try using help.)
 
-```{r}
+
+```r
 a <- structure(1:5, comment = "my attribute")
 a
+```
+
+```
+## [1] 1 2 3 4 5
+```
+
+```r
 attributes(a)
 ```
-```{r}
+
+```
+## $comment
+## [1] "my attribute"
+```
+
+```r
 a <- structure(1:5, my_comment = "my attribute")
 a
+```
+
+```
+## [1] 1 2 3 4 5
+## attr(,"my_comment")
+## [1] "my attribute"
+```
+
+```r
 attributes(a)
+```
+
+```
+## $my_comment
+## [1] "my attribute"
 ```
 
 _"comment" is a predefined attribute and by definition is not printed.  see `?comment` _
@@ -95,23 +138,50 @@ _"comment" is a predefined attribute and by definition is not printed.  see `?co
 ### 2 
 What happens to a factor when you modify its levels?
 
-```{r}
+
+```r
 f1 <- factor(letters)
 f1
+```
+
+```
+##  [1] a b c d e f g h i j k l m n o p q r s t u v w x y z
+## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
+```
+
+```r
 levels(f1) <- rev(levels(f1))
 f1
+```
+
+```
+##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
 ```
 
 _the printed labels change_
 
 ### 3) What does this code do? How do f2 and f3 differ from f1?
 
-```{r}
+
+```r
 f2 <- rev(factor(letters))
 f2
+```
 
+```
+##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
+```
+
+```r
 f3 <- factor(letters, levels = rev(letters))
 f3
+```
+
+```
+##  [1] a b c d e f g h i j k l m n o p q r s t u v w x y z
+## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
 ```
 
 _f2 reverse the order of the elements in f1 but the factor level assignments are the same (a is still the first level)_
@@ -121,23 +191,41 @@ _f3 reverses the order of the factor levels in f1, but the elements stay the sam
 ## Exercises 3
 
 ### 1. What does dim() return when applied to a vector?
-```{r}
+
+```r
 dim(1:3)
+```
+
+```
+## NULL
 ```
 
 ### 2. If is.matrix(x) is TRUE, what will is.array(x) return?
 
 _TRUE, because a matrix is just a 2D array_
-```{r}
+
+```r
 m <- matrix(1:25,ncol=5)
 is.matrix(m)
+```
+
+```
+## [1] TRUE
+```
+
+```r
 is.array(m)
+```
+
+```
+## [1] TRUE
 ```
 
 
 ### 3. How would you describe the following three objects? What makes them different to 1:5?
 
-```{r}
+
+```r
 x1 <- array(1:5, c(1, 1, 5))
 x2 <- array(1:5, c(1, 5, 1))
 x3 <- array(1:5, c(5, 1, 1))
@@ -149,9 +237,21 @@ These are all 3D arrays, but with data in only 1 dimension.
 
 ### 1. What attributes does a data frame possess?
 
-```{r}
+
+```r
 df <- data.frame(x=1:3, y=c("A","B","C"))
 attributes(df)
+```
+
+```
+## $names
+## [1] "x" "y"
+## 
+## $class
+## [1] "data.frame"
+## 
+## $row.names
+## [1] 1 2 3
 ```
 
 _names (colnames), class, and row.names_
@@ -160,8 +260,16 @@ _names (colnames), class, and row.names_
 
 coerces...
 
-```{r}
+
+```r
 as.matrix(df)
+```
+
+```
+##      x   y  
+## [1,] "1" "A"
+## [2,] "2" "B"
+## [3,] "3" "C"
 ```
 
 
@@ -169,8 +277,21 @@ Can you have a data frame with 0 rows? What about 0 columns?
 
 _yes_
 
-```{r}
+
+```r
 data.frame() # 0 rows and 0 columns
+```
+
+```
+## data frame with 0 columns and 0 rows
+```
+
+```r
 data.frame(x=numeric(),y=character()) # 0 rows, 2 columns
+```
+
+```
+## [1] x y
+## <0 rows> (or 0-length row.names)
 ```
 
