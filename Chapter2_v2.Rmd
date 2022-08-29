@@ -163,10 +163,16 @@ cat("c_list: ", obj_addrs(c), "\n")
 ```{r}
 x <- list(1:10)
 obj_addr(x)
+obj_addrs(x)
 tracemem(x)
 x[[2]] <- x
 obj_addr(x)
 obj_addr(x[[2]])
+```
+```{r}
+obj_addr(x)
+obj_addrs(x)
+ref(x)
 ```
 
 _when the reassignment takes place the second element of x ends up pointing to the 1:10 object and x itself gets a new address_
@@ -206,6 +212,11 @@ obj_size(funs)
 obj_size(mean)
 obj_size(sd)
 obj_size(var)
+
+obj_size(funs) - (obj_size(mean) + obj_size(sd) + obj_size(var))
+
+object.size(funs) - (object.size(mean) + object.size(sd) + object.size(var))
+
 ```
 
 _I think the point is that each of the functions already is defined in base R, so the only additional memory being taken up are the memory needed to make a list with 3 pointers_.

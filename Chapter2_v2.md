@@ -26,10 +26,10 @@ df
 ```
 
 ```
-##            1         2
-## 1 0.46004555 0.5161873
-## 2 0.15802563 0.7470560
-## 3 0.07295252 0.5490334
+##           1         2
+## 1 0.7192240 0.1306866
+## 2 0.2931463 0.2446100
+## 3 0.0909712 0.7096841
 ```
 
 Answer:
@@ -40,10 +40,10 @@ df
 ```
 
 ```
-##            1         2         3
-## 1 0.46004555 0.5161873 0.9762328
-## 2 0.15802563 0.7470560 0.9050816
-## 3 0.07295252 0.5490334 0.6219859
+##           1         2         3
+## 1 0.7192240 0.1306866 0.8499106
+## 2 0.2931463 0.2446100 0.5377563
+## 3 0.0909712 0.7096841 0.8006553
 ```
 _numbers are challenging because, well, R wants to inerpret them as numbers._
 
@@ -78,7 +78,7 @@ obj_addr(x)
 ```
 
 ```
-## [1] "0x1327876a8"
+## [1] "0x13d893188"
 ```
 
 ```r
@@ -86,7 +86,7 @@ obj_addr(y)
 ```
 
 ```
-## [1] "0x1327876a8"
+## [1] "0x13d893188"
 ```
 
 
@@ -115,7 +115,7 @@ mean
 ```
 ## function (x, ...) 
 ## UseMethod("mean")
-## <bytecode: 0x131ee2b20>
+## <bytecode: 0x11ea7f120>
 ## <environment: namespace:base>
 ```
 
@@ -126,7 +126,7 @@ base::mean
 ```
 ## function (x, ...) 
 ## UseMethod("mean")
-## <bytecode: 0x131ee2b20>
+## <bytecode: 0x11ea7f120>
 ## <environment: namespace:base>
 ```
 
@@ -137,7 +137,7 @@ get("mean")
 ```
 ## function (x, ...) 
 ## UseMethod("mean")
-## <bytecode: 0x131ee2b20>
+## <bytecode: 0x11ea7f120>
 ## <environment: namespace:base>
 ```
 
@@ -148,7 +148,7 @@ evalq(mean)
 ```
 ## function (x, ...) 
 ## UseMethod("mean")
-## <bytecode: 0x131ee2b20>
+## <bytecode: 0x11ea7f120>
 ## <environment: namespace:base>
 ```
 
@@ -159,7 +159,7 @@ match.fun("mean")
 ```
 ## function (x, ...) 
 ## UseMethod("mean")
-## <bytecode: 0x131ee2b20>
+## <bytecode: 0x11ea7f120>
 ## <environment: namespace:base>
 ```
 
@@ -169,7 +169,7 @@ obj_addr(mean)
 ```
 
 ```
-## [1] "0x131ee2bc8"
+## [1] "0x11ea7f1c8"
 ```
 
 ```r
@@ -177,7 +177,7 @@ obj_addr(base::mean)
 ```
 
 ```
-## [1] "0x131ee2bc8"
+## [1] "0x11ea7f1c8"
 ```
 
 ```r
@@ -185,7 +185,7 @@ obj_addr(get("mean"))
 ```
 
 ```
-## [1] "0x131ee2bc8"
+## [1] "0x11ea7f1c8"
 ```
 
 ```r
@@ -193,7 +193,7 @@ obj_addr(evalq(mean))
 ```
 
 ```
-## [1] "0x131ee2bc8"
+## [1] "0x11ea7f1c8"
 ```
 
 ```r
@@ -201,7 +201,7 @@ obj_addr(match.fun("mean"))
 ```
 
 ```
-## [1] "0x131ee2bc8"
+## [1] "0x11ea7f1c8"
 ```
 
 yes
@@ -237,7 +237,7 @@ tracemem(x)
 ```
 
 ```
-## [1] "<0x132189748>"
+## [1] "<0x13d9737c8>"
 ```
 
 ```r
@@ -245,8 +245,8 @@ x[[3]] <- 4
 ```
 
 ```
-## tracemem[0x132189748 -> 0x131151648]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x131151648 -> 0x1321dfc58]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+## tracemem[0x13d9737c8 -> 0x13ddafc08]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x13ddafc08 -> 0x10d952c78]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
 ```
 
 It has something to do with the coercion from integer to double
@@ -258,7 +258,7 @@ tracemem(x)
 ```
 
 ```
-## [1] "<0x1419b0288>"
+## [1] "<0x11ea1ffc8>"
 ```
 
 ```r
@@ -266,7 +266,7 @@ x[[3]] <- 4L
 ```
 
 ```
-## tracemem[0x1419b0288 -> 0x1324005c8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+## tracemem[0x11ea1ffc8 -> 0x11e724d88]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
 ```
 
 #### 3. Sketch out the relationship between the following objects:
@@ -285,7 +285,7 @@ cat("a: ", obj_addr(a), "\n")
 ```
 
 ```
-## a:  0x13206dbd8
+## a:  0x11ec17f48
 ```
 
 ```r
@@ -293,7 +293,7 @@ cat("b: ", obj_addr(b), "\n")
 ```
 
 ```
-## b:  0x1326f5788
+## b:  0x10d82b148
 ```
 
 ```r
@@ -301,7 +301,7 @@ cat("b_list: ", obj_addrs(b), "\n")
 ```
 
 ```
-## b_list:  0x13206dbd8 0x13206dbd8
+## b_list:  0x11ec17f48 0x11ec17f48
 ```
 
 ```r
@@ -309,7 +309,7 @@ cat("c: ", obj_addr(c), "\n")
 ```
 
 ```
-## c:  0x1321f14c8
+## c:  0x11e2da748
 ```
 
 ```r
@@ -317,7 +317,7 @@ cat("c_list: ", obj_addrs(c), "\n")
 ```
 
 ```
-## c_list:  0x1326f5788 0x13206dbd8 0x13206b2e0
+## c_list:  0x10d82b148 0x11ec17f48 0x11e1d45f8
 ```
 ![](figs/chapt2_fig1.png)
 
@@ -331,7 +331,15 @@ obj_addr(x)
 ```
 
 ```
-## [1] "0x140904cc8"
+## [1] "0x11e0f31f8"
+```
+
+```r
+obj_addrs(x)
+```
+
+```
+## [1] "0x11e2bb878"
 ```
 
 ```r
@@ -339,7 +347,7 @@ tracemem(x)
 ```
 
 ```
-## [1] "<0x140904cc8>"
+## [1] "<0x11e0f31f8>"
 ```
 
 ```r
@@ -347,7 +355,7 @@ x[[2]] <- x
 ```
 
 ```
-## tracemem[0x140904cc8 -> 0x141539c40]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+## tracemem[0x11e0f31f8 -> 0x11e213380]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
 ```
 
 ```r
@@ -355,7 +363,7 @@ obj_addr(x)
 ```
 
 ```
-## [1] "0x13241c3c8"
+## [1] "0x10d8bc708"
 ```
 
 ```r
@@ -363,7 +371,38 @@ obj_addr(x[[2]])
 ```
 
 ```
-## [1] "0x140904cc8"
+## [1] "0x11e0f31f8"
+```
+
+```r
+obj_addr(x)
+```
+
+```
+## [1] "0x10d8bc708"
+```
+
+```r
+obj_addrs(x)
+```
+
+```
+## [1] "0x11e2bb878" "0x11e0f31f8"
+```
+
+```r
+ref(x)
+```
+
+```
+## tracemem[0x11e0f31f8 -> 0x10fc95fc8]: FUN lapply FUN lapply ref eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+```
+
+```
+## █ [1:0x10d8bc708] <list> 
+## ├─[2:0x11e2bb878] <int> 
+## └─█ [3:0x11e0f31f8] <list> 
+##   └─[2:0x11e2bb878]
 ```
 
 _when the reassignment takes place the second element of x ends up pointing to the 1:10 object and x itself gets a new address_
@@ -456,6 +495,22 @@ obj_size(var)
 
 ```
 ## 12.47 kB
+```
+
+```r
+obj_size(funs) - (obj_size(mean) + obj_size(sd) + obj_size(var))
+```
+
+```
+## -528 B
+```
+
+```r
+object.size(funs) - (object.size(mean) + object.size(sd) + object.size(var))
+```
+
+```
+## 80 bytes
 ```
 
 _I think the point is that each of the functions already is defined in base R, so the only additional memory being taken up are the memory needed to make a list with 3 pointers_.
@@ -555,7 +610,7 @@ cat(tracemem(x), "\n")
 ```
 
 ```
-## <0x120dbfa48>
+## <0x118866388>
 ```
 
 ```r
@@ -565,16 +620,16 @@ for (i in 1:5) {
 ```
 
 ```
-## tracemem[0x120dbfa48 -> 0x120ded898]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded898 -> 0x120ded828]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded828 -> 0x120ded7b8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded7b8 -> 0x120ded748]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded748 -> 0x120ded6d8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded6d8 -> 0x120ded5f8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded5f8 -> 0x120ded518]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded518 -> 0x120ded438]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded438 -> 0x120ded358]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
-## tracemem[0x120ded358 -> 0x120ded2e8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+## tracemem[0x118866388 -> 0x118898b48]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x118898b48 -> 0x118898ad8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x118898ad8 -> 0x118898a68]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x118898a68 -> 0x1188989f8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x1188989f8 -> 0x118898988]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x118898988 -> 0x1188988a8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x1188988a8 -> 0x1188987c8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x1188987c8 -> 0x1188986e8]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x1188986e8 -> 0x118898608]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous> 
+## tracemem[0x118898608 -> 0x118898598]: [[<-.data.frame [[<- eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
 ```
 
 ```r
@@ -588,7 +643,7 @@ cat(tracemem(y), "\n")
 ```
 
 ```
-## <0x113c278b8>
+## <0x12e1c70c8>
 ```
 
 ```r
@@ -600,7 +655,7 @@ for (i in 1:5) {
 ```
 
 ```
-## tracemem[0x113c278b8 -> 0x113c32ce8]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
+## tracemem[0x12e1c70c8 -> 0x12e1dc408]: eval eval eval_with_user_handlers withVisible withCallingHandlers handle timing_fn evaluate_call <Anonymous> evaluate in_dir in_input_dir eng_r block_exec call_block process_group.block process_group withCallingHandlers process_file <Anonymous> <Anonymous>
 ```
 
 ```r
@@ -672,7 +727,7 @@ bench::mark(median_df(x, medians))
 ## # A tibble: 1 × 6
 ##   expression                 min   median `itr/sec` mem_alloc `gc/sec`
 ##   <bch:expr>            <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-## 1 median_df(x, medians)    2.66s    2.66s     0.376    2.24GB     1.88
+## 1 median_df(x, medians)    2.37s    2.37s     0.422    2.24GB     1.69
 ```
 
 ```r
@@ -683,7 +738,7 @@ bench::mark(median_list(x, medians))
 ## # A tibble: 1 × 6
 ##   expression                   min   median `itr/sec` mem_alloc `gc/sec`
 ##   <bch:expr>              <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-## 1 median_list(x, medians)   73.2ms   73.2ms      13.7     763MB     95.6
+## 1 median_list(x, medians)   73.4ms   73.4ms      13.6     763MB     95.4
 ```
 
 #### 3. What happens if you attempt to use tracemem() on an environment?
