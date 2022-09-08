@@ -1,0 +1,192 @@
+---
+title: "Chapter 3"
+author: "Julin Maloof"
+date: "2022-09-07"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Advanced R Chapter 3: Vectors
+
+## Quizz
+
+1.  What are the four common types of atomic vectors? What are the two rare types? *common: character, numeric, logical, integer; rare: complex, ??*
+
+2.  What are attributes? How do you get them and set them? *well, they are attributes. Metadata such as names, or characteristics that define how the object behaves*
+
+*set with `attr() <-` get with `attr()`*
+
+3.  How is a list different from an atomic vector? How is a matrix different from a data frame?
+
+*a list can have different data types per element whereas an atomic vector cannot. A data frame can have different column types whereas a matrix cannot*
+
+4.  Can you have a list that is a matrix? Can a data frame have a column that is a matrix?
+
+*not sure what is meant by a list that is a matrix. A matrix can be an element of a list. Can you have a matrix of lists?*
+
+```{r}
+# a matrix of lists
+matrix(c(list(1:10), list(LETTERS)))
+```
+
+3.  How do tibbles behave differently from data frames?
+
+    *No row names. No automatic conversion to factors. Special printing methods.*
+
+### 3.2.5 Exercises
+
+#### 1. How do you create raw and complex scalars? (See ?raw and ?complex.)
+
+```{r}
+as.raw(c(1,33, 50, 200))
+```
+
+```{r}
+complex(real=1:3, imaginary = -1:1)
+```
+
+
+#### 2. Test your knowledge of the vector coercion rules by predicting the output of the following uses of c():
+
+```{r}
+c(1, FALSE) # 1, 0
+c("a", 1) # "a", "1"
+c(TRUE, 1L) # 1L, 1L
+is.integer(c(TRUE, 1L))
+```
+
+
+#### 3. Why is 1 == "1" true? Why is -1 < FALSE true? Why is "one" < 2 false?
+
+_Coercion_
+
+_In the first example, 1 gets coerced to "1"_
+
+_In the second example, FALSE gets coerced to 0_
+
+_In the third example, 2 gets coerced to "2" and according to character sorting, digits come before letters_
+
+#### 4. Why is the default missing value, NA, a logical vector? What’s special about logical vectors? (Hint: think about c(FALSE, NA_character_).)
+
+_Logicals can be coereced to all other types_
+
+#### 5. Precisely what do is.atomic(), is.numeric(), and is.vector() test for?
+
+_I don't understand the implication that `is.atomic()` isn't behaving as expected; seems to test for atomic types (although not necessarily vectors, maybe that is the point_
+
+_`is.numeric()` tests whether or not a vector can be interpreted as numeric, e.g._
+
+```{r}
+x <- c(1L, 2L)
+x
+is.numeric(x)
+```
+
+_`is.vector` tests for whether or not the object is a vector with no attributes other than names_
+
+
+### 3.3.4 Exercises
+
+#### 1. How is setNames() implemented? How is unname() implemented? Read the source code.
+
+```{r}
+setNames
+```
+
+```{r}
+unname
+```
+
+_So these are just shorthand for what you would do yourself_
+
+#### 2. What does dim() return when applied to a 1-dimensional vector? When might you use NROW() or NCOL()?
+
+```{r}
+dim(1:3)
+```
+
+#NROW and NCOL are more generic
+```{r}
+x <- 1:3
+nrow(x)
+NROW(x)
+ncol(x)
+NCOL(x)
+```
+
+
+#### 3. How would you describe the following three objects? What makes them different from 1:5?
+
+```{r}
+x1 <- array(1:5, c(1, 1, 5))
+x2 <- array(1:5, c(1, 5, 1))
+x3 <- array(1:5, c(5, 1, 1))
+```
+
+_These are 3d arrays_
+
+#### 4. An early draft used this code to illustrate structure():
+
+```{r}
+structure(1:5, comment = "my attribute")
+#> [1] 1 2 3 4 5
+```
+
+But when you print that object you don’t see the comment attribute. Why? Is the attribute missing, or is there something else special about it? (Hint: try using help.)
+
+_The comment attribute is special and does not get printed_
+
+### 3.4.5 Exercises
+
+#### 1. What sort of object does table() return? What is its type? What attributes does it have? How does the dimensionality change as you tabulate more variables?
+
+```{r}
+x <- table(rep(c("dogs", "cats"), times=c(5,3)))
+x
+cat("\ntype:\n", typeof(x))
+cat("\n\nattributes:\n"); attributes(x)
+cat("\n\nclass\n", class(x))
+```
+_Type is integer; class is "table"; dimensions = number of classes_
+
+#### 2. What happens to a factor when you modify its levels?
+
+```{r}
+f1 <- factor(letters)
+as.integer(f1)
+f1
+```
+
+
+```{r}
+levels(f1) <- rev(levels(f1))
+as.integer(f1)
+f1
+```
+
+The integer represetnation does not change; the mapping of levels to integers does change
+
+#### 3. What does this code do? How do f2 and f3 differ from f1?
+
+```{r}
+f2 <- rev(factor(letters))
+
+f3 <- factor(letters, levels = rev(letters))
+```
+
+```{r}
+f2
+as.integer(f2)
+```
+
+```{r}
+f3
+as.integer(f3)
+```
+
+_f2 reverses the order of the categories (and associated integers) in the vector.  f3 reverses the mapping (which factor levels is "first"), but not the order of categories in the vector.
