@@ -189,4 +189,41 @@ f3
 as.integer(f3)
 ```
 
-_f2 reverses the order of the categories (and associated integers) in the vector.  f3 reverses the mapping (which factor levels is "first"), but not the order of categories in the vector.
+_f2 reverses the order of the categories (and associated integers) in the vector.  f3 reverses the mapping (which factor levels is "first"), but not the order of categories in the vector._
+
+### 3.5.4 Exercises
+
+#### 1. List all the ways that a list differs from an atomic vector.
+
+_1. can have different data types_
+
+_2. can be hierarchical/ recursive_
+
+_Seems like there should be more than this, given the wording of the question..._
+
+#### 2. Why do you need to use unlist() to convert a list to an atomic vector? Why doesn’t as.vector() work?
+
+_because lists are vectors, just not atomic ones_
+
+#### 3. Compare and contrast c() and unlist() when combining a date and date-time into a single vector.
+
+```{r}
+mydates <- as.Date(c("1967-05-02", "1965-01-20", "1999-10-10"))
+mydates
+
+mydatetimes <- as.POSIXct(c("2020-03-20 18:30", "2018-11-01 05:40"))
+mydatetimes
+```
+
+```{r}
+dates.c <- c(mydates, mydatetimes) #coerce to date only
+dates.c
+class(dates.c)
+```
+
+```{r}
+dates.l <- list(mydates, mydatetimes) #list of two differnt types
+dates.l
+sapply(dates.l, class)
+```
+
