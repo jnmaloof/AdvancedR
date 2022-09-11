@@ -372,8 +372,8 @@ pre code {
 
 <div id="advanced-r-chapter-3-vectors" class="section level1">
 <h1>Advanced R Chapter 3: Vectors</h1>
-<div id="quizz" class="section level2">
-<h2>Quizz</h2>
+<div id="quiz" class="section level2">
+<h2>Quiz</h2>
 <ol style="list-style-type: decimal">
 <li><p>What are the four common types of atomic vectors? What are the
 two rare types? <em>common: character, numeric, logical, integer; rare:
@@ -442,7 +442,7 @@ character sorting, digits come before letters</em></p>
 <h4>4. Why is the default missing value, NA, a logical vector? What’s
 special about logical vectors? (Hint: think about c(FALSE,
 NA_character_).)</h4>
-<p><em>Logicals can be coereced to all other types</em></p>
+<p><em>Logicals can be coerced to all other types</em></p>
 </div>
 <div id="precisely-what-do-is.atomic-is.numeric-and-is.vector-test-for" class="section level4">
 <h4>5. Precisely what do is.atomic(), is.numeric(), and is.vector() test
@@ -472,7 +472,7 @@ the source code.</h4>
 ##     names(object) &lt;- nm
 ##     object
 ## }
-## &lt;bytecode: 0x111fbf7e0&gt;
+## &lt;bytecode: 0x13cd189e0&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <pre class="r"><code>unname</code></pre>
 <pre><code>## function (obj, force = FALSE) 
@@ -483,7 +483,7 @@ the source code.</h4>
 ##         dimnames(obj) &lt;- NULL
 ##     obj
 ## }
-## &lt;bytecode: 0x1129a44b0&gt;
+## &lt;bytecode: 0x11e4806b0&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <p><em>So these are just shorthand for what you would do
 yourself</em></p>
@@ -577,7 +577,7 @@ as.integer(f1)</code></pre>
 <pre class="r"><code>f1</code></pre>
 <pre><code>##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
 ## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a</code></pre>
-<p>The integer represetnation does not change; the mapping of levels to
+<p>The integer representation does not change; the mapping of levels to
 integers does change</p>
 </div>
 <div id="what-does-this-code-do-how-do-f2-and-f3-differ-from-f1" class="section level4">
@@ -630,7 +630,7 @@ dates.c</code></pre>
 <pre><code>## [1] &quot;1967-05-02&quot; &quot;1965-01-20&quot; &quot;1999-10-10&quot; &quot;2020-03-20&quot; &quot;2018-11-01&quot;</code></pre>
 <pre class="r"><code>class(dates.c)</code></pre>
 <pre><code>## [1] &quot;Date&quot;</code></pre>
-<pre class="r"><code>dates.l &lt;- list(mydates, mydatetimes) #list of two differnt types
+<pre class="r"><code>dates.l &lt;- list(mydates, mydatetimes) #list of two different types
 dates.l</code></pre>
 <pre><code>## [[1]]
 ## [1] &quot;1967-05-02&quot; &quot;1965-01-20&quot; &quot;1999-10-10&quot;
@@ -707,8 +707,8 @@ to the least restrictive</em></p>
 ## [1,] 1 1
 ## [2,] 2 2
 ## [3,] 3 3</code></pre>
-<p><em><code>data.matrix()</code> converts everthing to numeric and then
-creates a numeric matrix</em></p>
+<p><em><code>data.matrix()</code> converts everything to numeric and
+then creates a numeric matrix</em></p>
 </div>
 </div>
 </div>

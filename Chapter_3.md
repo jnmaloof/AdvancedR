@@ -11,7 +11,7 @@ output:
 
 # Advanced R Chapter 3: Vectors
 
-## Quizz
+## Quiz
 
 1.  What are the four common types of atomic vectors? What are the two rare types? *common: character, numeric, logical, integer; rare: complex, ??*
 
@@ -114,7 +114,7 @@ _In the third example, 2 gets coerced to "2" and according to character sorting,
 
 #### 4. Why is the default missing value, NA, a logical vector? What’s special about logical vectors? (Hint: think about c(FALSE, NA_character_).)
 
-_Logicals can be coereced to all other types_
+_Logicals can be coerced to all other types_
 
 #### 5. Precisely what do is.atomic(), is.numeric(), and is.vector() test for?
 
@@ -158,7 +158,7 @@ setNames
 ##     names(object) <- nm
 ##     object
 ## }
-## <bytecode: 0x111fbf7e0>
+## <bytecode: 0x13cd189e0>
 ## <environment: namespace:stats>
 ```
 
@@ -176,7 +176,7 @@ unname
 ##         dimnames(obj) <- NULL
 ##     obj
 ## }
-## <bytecode: 0x1129a44b0>
+## <bytecode: 0x11e4806b0>
 ## <environment: namespace:base>
 ```
 
@@ -363,7 +363,7 @@ f1
 ## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
 ```
 
-The integer represetnation does not change; the mapping of levels to integers does change
+The integer representation does not change; the mapping of levels to integers does change
 
 #### 3. What does this code do? How do f2 and f3 differ from f1?
 
@@ -469,7 +469,7 @@ class(dates.c)
 
 
 ```r
-dates.l <- list(mydates, mydatetimes) #list of two differnt types
+dates.l <- list(mydates, mydatetimes) #list of two different types
 dates.l
 ```
 
@@ -613,4 +613,4 @@ data.matrix(df)
 ## [2,] 2 2
 ## [3,] 3 3
 ```
-_`data.matrix()` converts everthing to numeric and then creates a numeric matrix_
+_`data.matrix()` converts everything to numeric and then creates a numeric matrix_
