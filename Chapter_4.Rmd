@@ -65,28 +65,78 @@ Oh, cool, so these are selecting by "address"
 
 #### 1. Fix each of the following common data frame subsetting errors:
 
-```{r}
+__Original__
+```{r, eval=FALSE}
 mtcars[mtcars$cyl = 4, ]
 mtcars[-1:4, ]
 mtcars[mtcars$cyl <= 5]
 mtcars[mtcars$cyl == 4 | 6, ]
 ```
 
+__Fixed__
+```{r}
+mtcars[mtcars$cyl == 4, ]
+mtcars[-1:-4, ]
+mtcars[mtcars$cyl <= 5,]
+mtcars[mtcars$cyl == 4 | mtcars$cyl == 6, ]
+```
 
 #### 2. Why does the following code yield five missing values? (Hint: why is it different from x[NA_real_]?)
+
 
 ```{r}
 x <- 1:5
 x[NA]
+x[NA_real_]
 ```
+
+_I guess because [NA] is recycled and when you have an NA value it always returns NA in extraction.  But why is [NA_real_] different? Maybe because it is testing for NA_Real?
 
 #### 3. What does upper.tri() return? How does subsetting a matrix with it work? Do we need any additional subsetting rules to describe its behaviour?
 
+```{r}
 x <- outer(1:5, 1:5, FUN = "*")
+x
+upper.tri(x)
 x[upper.tri(x)]
+```
+
+_`upper.tri()` returns a matrix of TRUES and FALSES where TRUES correspond to the upper triangle.  We do not need any additional rules_
 
 #### 4. Why does mtcars[1:20] return an error? How does it differ from the similar mtcars[1:20, ]?
 
+```{r}
+dim(mtcars)
+```
+
+_When you are subsetting a data frame and do not include a comma, it subsets columns.  `mtcars` has less than 20 columns._
+
 #### 5. Implement your own function that extracts the diagonal entries from a matrix (it should behave like diag(x) where x is a matrix).
 
+```{r}
+m <- matrix(1:32, ncol=8)
+m
+diag(m)
+
+diag2 <- function(x) {
+  end <- ifelse(nrow(x) > ncol(x), length(x), nrow(x)^2) #anyway more clever to do this?
+  d <- seq(1, end, by=nrow(x)+1)
+  x[d]
+}
+
+diag2(m)
+
+```
+
+
 #### 6. What does df[is.na(df)] <- 0 do? How does it work?
+
+```{r}
+df <- as.data.frame(m)
+df
+df[3,2] <- NA
+df
+df[is.na(df)] <- 0
+df
+```
+_subsets the df to positions with NA and replaces them with 0_
