@@ -128,6 +128,21 @@ diag2(m)
 
 ```
 
+alternate way
+```{r}
+diag3 <- function(x) {
+  select <- 1:min(dim(x))
+  select <- cbind(select,select)
+  x[select]
+}
+
+diag(matrix(1:32,ncol=4))
+diag3(matrix(1:32,ncol=4))
+
+diag(matrix(1:32,ncol=8))
+diag3(matrix(1:32,ncol=8))
+```
+
 
 #### 6. What does df[is.na(df)] <- 0 do? How does it work?
 
@@ -140,3 +155,83 @@ df[is.na(df)] <- 0
 df
 ```
 _subsets the df to positions with NA and replaces them with 0_
+
+## 4.3
+
+Huh?
+```{r, eval=FALSE}
+for (i in 2:length(x)) {
+  out[[i]] <- fun(x[[i]], out[[i - 1]])
+}
+```
+
+
+### Exercises 4.3.5
+
+#### 1. Brainstorm as many ways as possible to extract the third value from the cyl variable in the mtcars dataset.
+
+```{r}
+mtcars[3,"cyl"]
+mtcars[3,2]
+mtcars$cyl[3]
+mtcars[["cyl"]][3]
+purrr::pluck(mtcars, "cyl", 3)
+```
+
+
+#### 2. Given a linear model, e.g., mod <- lm(mpg ~ wt, data = mtcars), extract the residual degrees of freedom. Then extract the R squared from the model summary (summary(mod))
+
+```{r}
+mod <- lm(mpg ~ wt, data = mtcars)
+str(mod)
+```
+
+```{r}
+mod$df.residual
+```
+```{r}
+mod.sum <- summary(mod)
+str(mod.sum)
+```
+
+```{r}
+mod.sum$r.squared
+```
+
+### Exercises 4.5.9
+
+#### 1. How would you randomly permute the columns of a data frame? (This is an important technique in random forests.) Can you simultaneously permute the rows and columns in one step?
+
+```{r}
+df <- data.frame(x=LETTERS[1:5], y=1:5, z=letters[26:22])
+df
+
+#columns
+df[,sample(ncol(df))]
+
+#columns and rows
+
+df[sample(nrow(df)), sample(ncol(df))]
+
+```
+
+
+#### 2. How would you select a random sample of m rows from a data frame? What if the sample had to be contiguous (i.e., with an initial row, a final row, and every row in between)?
+
+_I think the question means a random subset or random subsample_
+```{r}
+# 5 rows at random
+mtcars[sample(nrow(mtcars), size = 5),]
+
+# contiguous 5 rows
+start <- sample(nrow(mtcars)-4)
+mtcars[sample(start:(start+5), size = 5),]
+```
+
+
+#### 3. How could you put the columns in a data frame in alphabetical order?
+
+```{r}
+mtcars[, order(colnames(mtcars))]
+```
+
