@@ -614,12 +614,12 @@ df[,sample(ncol(df))]
 ```
 
 ```
-##   x z y
-## 1 A z 1
-## 2 B y 2
-## 3 C x 3
-## 4 D w 4
-## 5 E v 5
+##   y z x
+## 1 1 z A
+## 2 2 y B
+## 3 3 x C
+## 4 4 w D
+## 5 5 v E
 ```
 
 ```r
@@ -629,12 +629,12 @@ df[sample(nrow(df)), sample(ncol(df))]
 ```
 
 ```
-##   y x z
-## 1 1 A z
-## 3 3 C x
-## 2 2 B y
-## 5 5 E v
-## 4 4 D w
+##   y z x
+## 3 3 x C
+## 2 2 y B
+## 5 5 v E
+## 4 4 w D
+## 1 1 z A
 ```
 
 
@@ -648,35 +648,28 @@ mtcars[sample(nrow(mtcars), size = 5),]
 ```
 
 ```
-##                      mpg cyl  disp  hp drat    wt  qsec vs am gear carb
-## Porsche 914-2       26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
-## Cadillac Fleetwood  10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4
-## Lincoln Continental 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4
-## Merc 230            22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
-## Toyota Corona       21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+##                    mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+## Merc 230          22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+## Toyota Corona     21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+## Datsun 710        22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+## Honda Civic       30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+## Hornet Sportabout 18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2
 ```
 
 ```r
 # contiguous 5 rows
-start <- sample(nrow(mtcars)-4)
-mtcars[sample(start:(start+5), size = 5),]
+start <- sample(nrow(mtcars)-4, size=1)
+
+mtcars[start:(start+4),]
 ```
 
 ```
-## Warning in start:(start + 5): numerical expression has 28 elements: only the
-## first used
-
-## Warning in start:(start + 5): numerical expression has 28 elements: only the
-## first used
-```
-
-```
-##                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
-## Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
-## Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
-## Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1
-## Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
-## Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+##                   mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+## Pontiac Firebird 19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+## Fiat X1-9        27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+## Porsche 914-2    26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+## Lotus Europa     30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+## Ford Pantera L   15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
 ```
 
 

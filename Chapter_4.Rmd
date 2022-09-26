@@ -224,8 +224,10 @@ _I think the question means a random subset or random subsample_
 mtcars[sample(nrow(mtcars), size = 5),]
 
 # contiguous 5 rows
-start <- sample(nrow(mtcars)-4)
-mtcars[sample(start:(start+5), size = 5),]
+start <- sample(nrow(mtcars)-4, size=1)
+
+mtcars[start:(start+4),]
+
 ```
 
 
