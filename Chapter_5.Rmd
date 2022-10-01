@@ -1,0 +1,109 @@
+---
+title: "Chapter 5"
+author: "Julin Maloof"
+date: "2022-10-01"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 5 Flow Control
+
+## Quiz
+
+### 1. What is the difference between if and ifelse()?
+
+`if` is really flow control.  `ifelse` is vectorized
+
+### 2. In the following code, what will the value of y be if x is TRUE? What if x is FALSE? What if x is NA?
+
+`y <- if (x) 3`
+
+_TRUE: 3  _
+
+_FALSE: NULL  _
+
+_NA: NA # Wrong, code throws an error_
+
+### 3. What does switch("x", x = , y = 2, z = 3) return?
+
+_no idea..._
+
+### 5.2.4 Exercises
+
+#### 1. What type of vector does each of the following calls to ifelse() return?
+
+```{r}
+ifelse(TRUE, 1, "no")
+ifelse(FALSE, 1, "no")
+ifelse(NA, 1, "no")
+```
+
+_numeric, character, logical_
+
+Read the documentation and write down the rules in your own words.
+
+_the output vector starts off is logical and then is coerced based on what comes in from yes and then from no.  In the last example, since no values are taken from yes or no, it stays logical_
+
+
+Why does the following code work?
+
+```{r}
+x <- 1:10
+if (length(x)) "not empty" else "empty"
+#> [1] "not empty"
+
+x <- numeric()
+if (length(x)) "not empty" else "empty"
+#> [1] "empty"
+```
+
+Because 0 is FALSE and anything >0 is TRUE
+
+```{r}
+length(1:10)
+
+length(numeric())
+```
+
+### Exercises 5.3.3
+
+#### 1. Why does this code succeed without errors or warnings?
+
+```{r}
+x <- numeric()
+out <- vector("list", length(x))
+for (i in 1:length(x)) {
+  out[i] <- x[i] ^ 2
+}
+out
+```
+_not really sure_
+
+#### 2. When the following code is evaluated, what can you say about the vector being iterated?
+
+```{r}
+xs <- c(1, 2, 3)
+for (x in xs) {
+  xs <- c(xs, x * 2)
+}
+xs
+```
+
+_The vector being iterated is not updated until after the for loop completes_
+
+#### 3. What does the following code tell you about when the index is updated?
+
+```{r}
+for (i in 1:3) {
+  i <- i * 2
+  print(i) 
+}
+```
+
+
+_the index is updated at the beginning of each iteration_
