@@ -642,7 +642,7 @@ stats::aggregate
 ```
 ## function (x, ...) 
 ## UseMethod("aggregate")
-## <bytecode: 0x139bd8840>
+## <bytecode: 0x13473d040>
 ## <environment: namespace:stats>
 ```
 
@@ -842,7 +842,7 @@ show_time()
 ```
 
 ```
-## [1] "2022-10-16 15:27:29 PDT"
+## [1] "2022-10-16 15:40:07 PDT"
 ```
 
 ```r
@@ -1214,7 +1214,7 @@ cor(m = "k", y = y, u = "p", x = x)
 ```
 
 ```
-## [1] -0.04583492
+## [1] -0.006350647
 ```
 
 ```r
@@ -1222,7 +1222,7 @@ cor(x=x, y=y, use = "pairwise.complete.obs", method="kendall")
 ```
 
 ```
-## [1] -0.04583492
+## [1] -0.006350647
 ```
 
 
@@ -1246,7 +1246,7 @@ x
 ```
 
 ```
-##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3
+##  [1] 10  6  3  8  3  1  1  5  1  3  3 NA  9  1  1  6  6  7  3  6
 ```
 
 ```r
@@ -1254,7 +1254,7 @@ get("x")
 ```
 
 ```
-##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3
+##  [1] 10  6  3  8  3  1  1  5  1  3  3 NA  9  1  1  6  6  7  3  6
 ```
 
 ```r
@@ -1279,7 +1279,7 @@ z
 ```
 
 ```
-##  [1]   1   2   3   4   5   6   7 200   9  10
+##  [1]   1   2 200   4   5   6   7   8   9  10
 ```
 
 
@@ -1317,6 +1317,24 @@ z
 
 
 ### 6. Create a list of all the replacement functions found in the base package. Which ones are primitive functions? (Hint: use apropos().)
+
+
+```r
+replacement_functions <- apropos("<-$", mode = "function")
+
+is_replacement_function <- sapply(replacement_functions, function(x) is.primitive(get(x)))
+
+replacement_functions[is_replacement_function]
+```
+
+```
+##  [1] "[[<-"           "[<-"            "@<-"            "<-"            
+##  [5] "<<-"            "$<-"            "attr<-"         "attributes<-"  
+##  [9] "class<-"        "dim<-"          "dimnames<-"     "el<-"          
+## [13] "environment<-"  "length<-"       "levels<-"       "names<-"       
+## [17] "oldClass<-"     "storage.mode<-"
+```
+
 
 ### 7. What are valid names for user-created infix functions?
 
@@ -1380,7 +1398,7 @@ TRUE %xor% TRUE
 ```
 
 ```
-##  [1]  4  6  9 10 11 13 15 18 19 NA
+##  [1]  6  9 10 11 13 14 18 19 20 NA
 ```
 
 ```r
@@ -1388,7 +1406,7 @@ TRUE %xor% TRUE
 ```
 
 ```
-## [1]  6 10 11 14 15 16 18 NA
+## [1]  5  6 11 13 17 20 22 NA
 ```
 
 ```r
@@ -1396,7 +1414,7 @@ union(x, y)
 ```
 
 ```
-##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16
+##  [1]  6  9 10 11 13 14 18 19 20 NA  5 17 22
 ```
 
 ```r
@@ -1404,7 +1422,7 @@ x %u% y
 ```
 
 ```
-##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16
+##  [1]  6  9 10 11 13 14 18 19 20 NA  5 17 22
 ```
 
 ```r
@@ -1412,7 +1430,7 @@ intersect(x, y)
 ```
 
 ```
-## [1]  6 10 11 15 18 NA
+## [1]  6 11 13 20 NA
 ```
 
 ```r
@@ -1420,7 +1438,7 @@ x %n% y
 ```
 
 ```
-## [1]  6 10 11 15 18 NA
+## [1]  6 11 13 20 NA
 ```
 
 ```r
@@ -1428,7 +1446,7 @@ setdiff(x, y)
 ```
 
 ```
-## [1]  4  9 13 19
+## [1]  9 10 14 18 19
 ```
 
 ```r
@@ -1436,7 +1454,7 @@ x %/% y
 ```
 
 ```
-## [1]  4  9 13 19
+## [1]  9 10 14 18 19
 ```
 
 ```r
@@ -1444,7 +1462,7 @@ setdiff(y, x)
 ```
 
 ```
-## [1] 14 16
+## [1]  5 17 22
 ```
 
 ```r
@@ -1452,6 +1470,6 @@ y %/% x
 ```
 
 ```
-## [1] 14 16
+## [1]  5 17 22
 ```
 

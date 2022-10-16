@@ -568,6 +568,15 @@ z
 
 ### 6. Create a list of all the replacement functions found in the base package. Which ones are primitive functions? (Hint: use apropos().)
 
+```{r}
+replacement_functions <- apropos("<-$", mode = "function")
+
+is_replacement_function <- sapply(replacement_functions, function(x) is.primitive(get(x)))
+
+replacement_functions[is_replacement_function]
+```
+
+
 ### 7. What are valid names for user-created infix functions?
 
 _anything but "%"_

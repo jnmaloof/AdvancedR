@@ -878,7 +878,7 @@ created in?</li>
 <pre class="r"><code>stats::aggregate</code></pre>
 <pre><code>## function (x, ...) 
 ## UseMethod(&quot;aggregate&quot;)
-## &lt;bytecode: 0x139bd8840&gt;
+## &lt;bytecode: 0x13473d040&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 </div>
 <div id="exercises" class="section level2">
@@ -998,7 +998,7 @@ value for breaks is “Sturges”, and</li>
   print(x)
 }
 show_time()</code></pre>
-<pre><code>## [1] &quot;2022-10-16 15:27:29 PDT&quot;</code></pre>
+<pre><code>## [1] &quot;2022-10-16 15:40:07 PDT&quot;</code></pre>
 <pre class="r"><code>#&gt; [1] &quot;2021-02-21 19:22:36 UTC&quot;</code></pre>
 <p><em>because x is evaluated inside the function and a new stop
 function has been defined inside of the show_time function</em></p>
@@ -1236,9 +1236,9 @@ y &lt;- runif(min = 0, max = 1, 20)
 y &lt;- runif(20, min = 0, max=1)
 
 cor(m = &quot;k&quot;, y = y, u = &quot;p&quot;, x = x)</code></pre>
-<pre><code>## [1] -0.04583492</code></pre>
+<pre><code>## [1] -0.006350647</code></pre>
 <pre class="r"><code>cor(x=x, y=y, use = &quot;pairwise.complete.obs&quot;, method=&quot;kendall&quot;)</code></pre>
-<pre><code>## [1] -0.04583492</code></pre>
+<pre><code>## [1] -0.006350647</code></pre>
 </div>
 <div id="explain-why-the-following-code-fails" class="section level3">
 <h3>3. Explain why the following code fails:</h3>
@@ -1253,9 +1253,9 @@ gets the contents of x, not the object itself</em></p>
 }
 
 x</code></pre>
-<pre><code>##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3</code></pre>
+<pre><code>##  [1] 10  6  3  8  3  1  1  5  1  3  3 NA  9  1  1  6  6  7  3  6</code></pre>
 <pre class="r"><code>get(&quot;x&quot;)</code></pre>
-<pre><code>##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3</code></pre>
+<pre><code>##  [1] 10  6  3  8  3  1  1  5  1  3  3 NA  9  1  1  6  6  7  3  6</code></pre>
 <pre class="r"><code>modify(x, 1) &lt;- 10</code></pre>
 </div>
 <div id="create-a-replacement-function-that-modifies-a-random-location-in-a-vector." class="section level3">
@@ -1271,7 +1271,7 @@ z &lt;- 1:10
 
 modify.random(z) &lt;- 200
 z</code></pre>
-<pre><code>##  [1]   1   2   3   4   5   6   7 200   9  10</code></pre>
+<pre><code>##  [1]   1   2 200   4   5   6   7   8   9  10</code></pre>
 </div>
 <div id="write-your-own-version-of-that-pastes-its-inputs-together-if-they-are-character-vectors-but-behaves-as-usual-otherwise.-in-other-words-make-this-code-work" class="section level3">
 <h3>5. Write your own version of + that pastes its inputs together if
@@ -1295,6 +1295,16 @@ words, make this code work:</h3>
 <div id="create-a-list-of-all-the-replacement-functions-found-in-the-base-package.-which-ones-are-primitive-functions-hint-use-apropos." class="section level3">
 <h3>6. Create a list of all the replacement functions found in the base
 package. Which ones are primitive functions? (Hint: use apropos().)</h3>
+<pre class="r"><code>replacement_functions &lt;- apropos(&quot;&lt;-$&quot;, mode = &quot;function&quot;)
+
+is_replacement_function &lt;- sapply(replacement_functions, function(x) is.primitive(get(x)))
+
+replacement_functions[is_replacement_function]</code></pre>
+<pre><code>##  [1] &quot;[[&lt;-&quot;           &quot;[&lt;-&quot;            &quot;@&lt;-&quot;            &quot;&lt;-&quot;            
+##  [5] &quot;&lt;&lt;-&quot;            &quot;$&lt;-&quot;            &quot;attr&lt;-&quot;         &quot;attributes&lt;-&quot;  
+##  [9] &quot;class&lt;-&quot;        &quot;dim&lt;-&quot;          &quot;dimnames&lt;-&quot;     &quot;el&lt;-&quot;          
+## [13] &quot;environment&lt;-&quot;  &quot;length&lt;-&quot;       &quot;levels&lt;-&quot;       &quot;names&lt;-&quot;       
+## [17] &quot;oldClass&lt;-&quot;     &quot;storage.mode&lt;-&quot;</code></pre>
 </div>
 <div id="what-are-valid-names-for-user-created-infix-functions" class="section level3">
 <h3>7. What are valid names for user-created infix functions?</h3>
@@ -1326,25 +1336,25 @@ conventions from mathematics.</h3>
 
 `%/%` &lt;- function(x,y) setdiff(x,y)</code></pre>
 <pre class="r"><code>(x &lt;- c(sort(sample(1:20, 9)), NA))</code></pre>
-<pre><code>##  [1]  4  6  9 10 11 13 15 18 19 NA</code></pre>
+<pre><code>##  [1]  6  9 10 11 13 14 18 19 20 NA</code></pre>
 <pre class="r"><code>(y &lt;- c(sort(sample(3:23, 7)), NA))</code></pre>
-<pre><code>## [1]  6 10 11 14 15 16 18 NA</code></pre>
+<pre><code>## [1]  5  6 11 13 17 20 22 NA</code></pre>
 <pre class="r"><code>union(x, y)</code></pre>
-<pre><code>##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16</code></pre>
+<pre><code>##  [1]  6  9 10 11 13 14 18 19 20 NA  5 17 22</code></pre>
 <pre class="r"><code>x %u% y</code></pre>
-<pre><code>##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16</code></pre>
+<pre><code>##  [1]  6  9 10 11 13 14 18 19 20 NA  5 17 22</code></pre>
 <pre class="r"><code>intersect(x, y)</code></pre>
-<pre><code>## [1]  6 10 11 15 18 NA</code></pre>
+<pre><code>## [1]  6 11 13 20 NA</code></pre>
 <pre class="r"><code>x %n% y</code></pre>
-<pre><code>## [1]  6 10 11 15 18 NA</code></pre>
+<pre><code>## [1]  6 11 13 20 NA</code></pre>
 <pre class="r"><code>setdiff(x, y)</code></pre>
-<pre><code>## [1]  4  9 13 19</code></pre>
+<pre><code>## [1]  9 10 14 18 19</code></pre>
 <pre class="r"><code>x %/% y</code></pre>
-<pre><code>## [1]  4  9 13 19</code></pre>
+<pre><code>## [1]  9 10 14 18 19</code></pre>
 <pre class="r"><code>setdiff(y, x)</code></pre>
-<pre><code>## [1] 14 16</code></pre>
+<pre><code>## [1]  5 17 22</code></pre>
 <pre class="r"><code>y %/% x</code></pre>
-<pre><code>## [1] 14 16</code></pre>
+<pre><code>## [1]  5 17 22</code></pre>
 </div>
 </div>
 
