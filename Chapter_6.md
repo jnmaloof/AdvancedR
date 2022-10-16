@@ -642,7 +642,7 @@ stats::aggregate
 ```
 ## function (x, ...) 
 ## UseMethod("aggregate")
-## <bytecode: 0x11f2ace40>
+## <bytecode: 0x139bd8840>
 ## <environment: namespace:stats>
 ```
 
@@ -842,7 +842,7 @@ show_time()
 ```
 
 ```
-## [1] "2022-10-08 17:56:03 PDT"
+## [1] "2022-10-16 15:27:29 PDT"
 ```
 
 ```r
@@ -870,3 +870,588 @@ args(library)
 #library()
 ```
 Zero arguments, but not sure how to figure this out.
+
+## 6.6.1 Exercises
+### 1. Explain the following results:
+
+
+```r
+sum(1, 2, 3)
+```
+
+```
+## [1] 6
+```
+
+```r
+#> [1] 6
+mean(1, 2, 3)
+```
+
+```
+## [1] 1
+```
+
+```r
+#> [1] 1
+
+sum(1, 2, 3, na.omit = TRUE)
+```
+
+```
+## [1] 7
+```
+
+```r
+#> [1] 7
+mean(1, 2, 3, na.omit = TRUE)
+```
+
+```
+## [1] 1
+```
+
+```r
+#> [1] 1
+```
+
+
+_Part 1: `sum()` has a `...` argument first and it will sum up all argumetns given, aside from its final argument `na.rm = FALSE`.  In `mean()`, the `...` argument comes last; `mean()` only takes the mean of its first argument; the `...` argument is for passing arguments to other functions._
+
+_Part 2: Somehow `na.omit = TRUE` is getting evaluated to `1` in `sum` and included in the total.  This doesn't happen for mean for the reasons described above_
+
+
+### 2. Explain how to find the documentation for the named arguments in the following function call:
+
+
+```r
+plot(1:10, col = "red", pch = 20, xlab = "x", col.lab = "blue")
+```
+
+![](Chapter_6_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
+
+_`?plot` tells us that `...` is passed to other methods, such as `par()` so look at `?par`_
+
+### 3. Why does plot(1:10, col = "red") only colour the points, not the axes or labels? Read the source code of plot.default() to find out.
+
+_Because `plot.default` uses `Axis` but when it calls `Axis` is excludes `col` from the `...` that gets passed to `Axis`.  And labels color has to be specified with col.lab_
+
+Test:
+
+
+```r
+plot.default(1:10, col="red")
+```
+
+![](Chapter_6_files/figure-html/unnamed-chunk-26-1.png)<!-- -->
+
+
+```r
+plot.julin <- function(x, y = NULL, type = "p", xlim = NULL, ylim = NULL, 
+                       log = "", main = NULL, sub = NULL, xlab = NULL, ylab = NULL, 
+                       ann = par("ann"), axes = TRUE, frame.plot = axes, panel.first = NULL, 
+                       panel.last = NULL, asp = NA, xgap.axis = NA, ygap.axis = NA, 
+                       ...) 
+{
+  # localAxis <- function(..., col, bg, pch, cex, lty, lwd) Axis(...)
+  localAxis <- function(..., bg, pch, cex, lty, lwd) Axis(...)
+  localBox <- function(..., col, bg, pch, cex, lty, lwd) box(...)
+  localWindow <- function(..., col, bg, pch, cex, lty, lwd) plot.window(...)
+  #  localTitle <- function(..., col, bg, pch, cex, lty, lwd) title(...)
+  localTitle <- function(..., col, bg, pch, cex, lty, lwd) title(col.lab=col, ...)
+  xlabel <- if (!missing(x)) 
+    deparse1(substitute(x))
+  ylabel <- if (!missing(y)) 
+    deparse1(substitute(y))
+  xy <- xy.coords(x, y, xlabel, ylabel, log)
+  xlab <- if (is.null(xlab)) 
+    xy$xlab
+  else xlab
+  ylab <- if (is.null(ylab)) 
+    xy$ylab
+  else ylab
+  xlim <- if (is.null(xlim)) 
+    range(xy$x[is.finite(xy$x)])
+  else xlim
+  ylim <- if (is.null(ylim)) 
+    range(xy$y[is.finite(xy$y)])
+  else ylim
+  dev.hold()
+  on.exit(dev.flush())
+  plot.new()
+  localWindow(xlim, ylim, log, asp, ...)
+  panel.first
+  plot.xy(xy, type, ...)
+  panel.last
+  if (axes) {
+    localAxis(if (is.null(y)) 
+      xy$x
+      else x, side = 1, gap.axis = xgap.axis, ...)
+    localAxis(if (is.null(y)) 
+      x
+      else y, side = 2, gap.axis = ygap.axis, ...)
+  }
+  if (frame.plot) 
+    localBox(...)
+  if (ann) 
+    localTitle(main = main, sub = sub, xlab = xlab, ylab = ylab, 
+               ...)
+  invisible()
+}
+```
+
+
+```r
+plot.julin(1:10, col="red")
+```
+
+![](Chapter_6_files/figure-html/unnamed-chunk-28-1.png)<!-- -->
+
+## 6.7.5 Exercises
+
+### 1. What does load() return? Why don’t you normally see these values?
+
+
+```r
+save(list=ls(), file="test.Rdata")
+```
+
+```
+## Warning in save(list = ls(), file = "test.Rdata"): 'package:dplyr' may not be
+## available when loading
+```
+
+```r
+withVisible(load("test.Rdata"))
+```
+
+```
+## $value
+##  [1] "c"          "f"          "f1"         "f2"         "fun.args"  
+##  [6] "funs"       "objs"       "plot.julin" "primfuns"   "show_time" 
+## [11] "x"          "x_ok"       "y"         
+## 
+## $visible
+## [1] FALSE
+```
+
+```r
+file.remove("test.Rdata")
+```
+
+```
+## [1] TRUE
+```
+_`load()` returns (invisibly) the names of the items it has loaded_
+
+### 2. What does write.table() return? What would be more useful?
+
+
+```r
+withVisible(
+  write.table(matrix(1:25,ncol=5), file = "test.table")
+)
+```
+
+```
+## $value
+## NULL
+## 
+## $visible
+## [1] FALSE
+```
+
+```r
+file.remove("test.table")
+```
+
+```
+## [1] TRUE
+```
+_NULL. it might be more useful to return success or failure?_
+
+### 3. How does the chdir parameter of source() compare to with_dir()? Why might you prefer one to the other?
+
+
+```r
+?source
+
+?withr::with_dir
+```
+
+_looking at the code, `source` does more error checking of the path.  But I think I am missing something_
+
+### 4. Write a function that opens a graphics device, runs the supplied code, and closes the graphics device (always, regardless of whether or not the plotting code works).
+
+
+```r
+gr.test <- function(code) {
+  jpeg() # open graphics device
+  on.exit(dev.off(), add=TRUE)
+  
+  force(code) # execute the code
+}
+```
+
+
+```r
+gr.test(plot(1:10, 1:10))
+
+#gr.test(plat(1:10,1:10))
+
+file.remove("Rplot001.jpeg")
+```
+
+```
+## [1] TRUE
+```
+
+
+### 5. We can use on.exit() to implement a simple version of capture.output().
+
+
+```r
+capture.output2 <- function(code) {
+  temp <- tempfile()
+  on.exit(file.remove(temp), add = TRUE, after = TRUE)
+
+  sink(temp)
+  on.exit(sink(), add = TRUE, after = TRUE)
+
+  force(code)
+  readLines(temp)
+}
+capture.output2(cat("a", "b", "c", sep = "\n"))
+```
+
+```
+## [1] "a" "b" "c"
+```
+
+```r
+#> [1] "a" "b" "c"
+```
+
+
+Compare capture.output() to capture.output2(). How do the functions differ? What features have I removed to make the key ideas easier to see? How have I rewritten the key ideas so they’re easier to understand?
+
+_features removed: ability to name capture file, ability to append to file, ability to (not) split, ability to specify type_
+
+_clarity: new function doesn't use a for loop, doesn't use ...elt()_
+
+## 6.8.6 Exercises
+
+### 1. Rewrite the following code snippets into prefix form:
+
+
+```r
+1 + 2 + 3
+```
+
+```
+## [1] 6
+```
+
+```r
+`+`(`+`(1,2), 3)
+```
+
+```
+## [1] 6
+```
+
+```r
+1 + (2 + 3)
+```
+
+```
+## [1] 6
+```
+
+```r
+`+`(1, `+`(2,3) )
+```
+
+```
+## [1] 6
+```
+
+```r
+x <- 1:10
+n <- 7
+
+if (length(x) <= 5) x[[5]] else x[[n]]
+```
+
+```
+## [1] 7
+```
+
+```r
+`if`( 
+  `<=`(length(x), 5), #cond
+  `[[`(x,5), #true
+  `[[`(x,n) #false
+)
+```
+
+```
+## [1] 7
+```
+
+
+### 2. Clarify the following list of odd function calls:
+
+
+```r
+x <- sample(replace = TRUE, 20, x = c(1:10, NA))
+x <- sample(c(1:10, NA), size = 20, replace = TRUE)
+
+y <- runif(min = 0, max = 1, 20)
+y <- runif(20, min = 0, max=1)
+
+cor(m = "k", y = y, u = "p", x = x)
+```
+
+```
+## [1] -0.04583492
+```
+
+```r
+cor(x=x, y=y, use = "pairwise.complete.obs", method="kendall")
+```
+
+```
+## [1] -0.04583492
+```
+
+
+### 3. Explain why the following code fails:
+
+
+```r
+#modify(get("x"), 1) <- 10
+#> Error: target of assignment expands to non-language object
+```
+_not sure what he is geting at here. Am I supposed to be using his modify function first? If so, it fails because `get("x")` gets the contents of x, not the object itself_
+
+
+```r
+`modify<-` <- function(x, position, value) {
+  x[position] <- value
+  x
+}
+
+x
+```
+
+```
+##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3
+```
+
+```r
+get("x")
+```
+
+```
+##  [1]  2  5  1  5 10  1  4 NA  6 NA  4  6 NA  7  9  5  1  4  8  3
+```
+
+```r
+modify(x, 1) <- 10
+```
+
+
+### 4. Create a replacement function that modifies a random location in a vector.
+
+
+```r
+`modify.random<-` <- function(x, value) {
+  position <- sample(length(x), size = 1)
+  x[position] <- value
+  x
+}
+
+z <- 1:10
+
+modify.random(z) <- 200
+z
+```
+
+```
+##  [1]   1   2   3   4   5   6   7 200   9  10
+```
+
+
+### 5. Write your own version of + that pastes its inputs together if they are character vectors but behaves as usual otherwise. In other words, make this code work:
+
+
+```r
+`+` <- function(x,y) {
+  if(any(is.character(c(x,y)))) 
+    paste0(x,y)
+  else
+    sum(x,y)
+}
+
+1 + 2
+```
+
+```
+## [1] 3
+```
+
+```r
+#> [1] 3
+
+"a" + "b"
+```
+
+```
+## [1] "ab"
+```
+
+```r
+#> [1] "ab"
+```
+
+
+### 6. Create a list of all the replacement functions found in the base package. Which ones are primitive functions? (Hint: use apropos().)
+
+### 7. What are valid names for user-created infix functions?
+
+_anything but "%"_
+
+### 8. Create an infix xor() operator.
+
+XOR is A or B but not both
+
+```r
+`%xor%` <- function(a,b) {
+  (a|b) &! (a&b)
+}
+
+TRUE %xor% FALSE
+```
+
+```
+## [1] TRUE
+```
+
+```r
+FALSE %xor% TRUE
+```
+
+```
+## [1] TRUE
+```
+
+```r
+FALSE %xor% FALSE
+```
+
+```
+## [1] FALSE
+```
+
+```r
+TRUE %xor% TRUE
+```
+
+```
+## [1] FALSE
+```
+
+
+### 9. Create infix versions of the set functions intersect(), union(), and setdiff(). You might call them %n%, %u%, and %/% to match conventions from mathematics.
+
+
+```r
+`%n%` <- function(x,y) intersect(x,y)
+
+`%u%` <- function(x,y) union(x,y)
+
+`%/%` <- function(x,y) setdiff(x,y)
+```
+
+
+```r
+(x <- c(sort(sample(1:20, 9)), NA))
+```
+
+```
+##  [1]  4  6  9 10 11 13 15 18 19 NA
+```
+
+```r
+(y <- c(sort(sample(3:23, 7)), NA))
+```
+
+```
+## [1]  6 10 11 14 15 16 18 NA
+```
+
+```r
+union(x, y)
+```
+
+```
+##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16
+```
+
+```r
+x %u% y
+```
+
+```
+##  [1]  4  6  9 10 11 13 15 18 19 NA 14 16
+```
+
+```r
+intersect(x, y)
+```
+
+```
+## [1]  6 10 11 15 18 NA
+```
+
+```r
+x %n% y
+```
+
+```
+## [1]  6 10 11 15 18 NA
+```
+
+```r
+setdiff(x, y)
+```
+
+```
+## [1]  4  9 13 19
+```
+
+```r
+x %/% y
+```
+
+```
+## [1]  4  9 13 19
+```
+
+```r
+setdiff(y, x)
+```
+
+```
+## [1] 14 16
+```
+
+```r
+y %/% x
+```
+
+```
+## [1] 14 16
+```
+
