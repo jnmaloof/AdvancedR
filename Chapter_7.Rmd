@@ -1,0 +1,101 @@
+---
+title: "Chapter 7"
+author: "Julin Maloof"
+date: "2022-10-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rlang)
+```
+
+What is the difference between `rlang::env()` and `new.env()`?
+
+```{r}
+e1 <- env(a = "John",
+          b = 23,
+          c = FALSE)
+env_print(e1)
+```
+
+```{r}
+e2 <- new.env()
+e2$a <- "Paulo"
+e2$b <- 42
+e2$c <- TRUE
+
+env_print(e2)
+```
+
+```{r}
+env_parent() #why rlang?
+```
+
+```{r}
+env_parents()
+```
+
+## 7.2.7 Exercises
+
+### 1. List three ways in which an environment differs from a list.
+
+_1. not ordered_
+_2. names must be unique_
+_3. has a parent_
+
+### 2. Create an environment as illustrated by this picture.
+
+```{r}
+e2 <- env()
+e2$loop <- e2
+env_print(e2)
+```
+
+
+### 3. Create a pair of environments as illustrated by this picture.
+
+```{r}
+e3a <- env()
+e3b <- env()
+e3a$loop <- e3b
+e3b$dedoop <- e3a
+
+env_print(e3a)
+env_print(e3b)
+```
+
+
+### 4. Explain why e[[1]] and e[c("a", "b")] don’t make sense when e is an environment.
+
+_`e[[1]]` does not make sense because objects in an environment are not ordered so there is no "first" element_
+
+_I am not as sure about `e[c("a", "b")]` but I guess because you can't subset an environment (but why not?)_
+
+### 5. Create a version of env_poke() that will only bind new names, never re-bind old names. Some programming languages only do this, and are known as single assignment languages.
+
+
+
+### 6. What does this function do? How does it differ from <<- and why might you prefer it?
+
+```{r}
+rebind <- function(name, value, env = caller_env()) {
+  if (identical(env, empty_env())) {
+    stop("Can't find `", name, "`", call. = FALSE)
+  } else if (env_has(env, name)) {
+    env_poke(env, name, value)
+  } else {
+    rebind(name, value, env_parent(env))
+  }
+}
+rebind("a", 10)
+#> Error: Can't find `a`
+a <- 5
+rebind("a", 10)
+a
+#> [1] 10
+```
+
