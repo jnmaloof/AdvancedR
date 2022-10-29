@@ -25,7 +25,7 @@ env_print(e1)
 ```
 
 ```
-## <environment: 0x12447a4a8>
+## <environment: 0x107e044f0>
 ## Parent: <environment: global>
 ## Bindings:
 ## • a: <chr>
@@ -44,7 +44,7 @@ env_print(e2)
 ```
 
 ```
-## <environment: 0x1107d0cf8>
+## <environment: 0x1121abf40>
 ## Parent: <environment: global>
 ## Bindings:
 ## • a: <chr>
@@ -101,7 +101,7 @@ env_print(e2)
 ```
 
 ```
-## <environment: 0x1128cc1f8>
+## <environment: 0x113af2ae0>
 ## Parent: <environment: global>
 ## Bindings:
 ## • loop: <env>
@@ -121,7 +121,7 @@ env_print(e3a)
 ```
 
 ```
-## <environment: 0x1147f3e08>
+## <environment: 0x107e8fb18>
 ## Parent: <environment: global>
 ## Bindings:
 ## • loop: <env>
@@ -132,7 +132,7 @@ env_print(e3b)
 ```
 
 ```
-## <environment: 0x11478cfc0>
+## <environment: 0x107dc59d0>
 ## Parent: <environment: global>
 ## Bindings:
 ## • dedoop: <env>
@@ -166,7 +166,7 @@ env_print(e5)
 ```
 
 ```
-## <environment: 0x111e6e7d0>
+## <environment: 0x1130b1630>
 ## Parent: <environment: global>
 ## Bindings:
 ## • a: <dbl>
@@ -178,7 +178,7 @@ env_print(e5)
 ```
 
 ```
-## <environment: 0x111e6e7d0>
+## <environment: 0x1130b1630>
 ## Parent: <environment: global>
 ## Bindings:
 ## • a: <dbl>
@@ -190,7 +190,7 @@ env_poke2(e5, "a", 12) #error, as expected
 ```
 
 ```
-## Error in env_poke2(e5, "a", 12): environment 0x111e6e7d0 already has a binding called 'a'
+## Error in env_poke2(e5, "a", 12): environment 0x1130b1630 already has a binding called 'a'
 ```
 
 
@@ -297,4 +297,165 @@ Best would be to use the environment of the first function call but not sure how
 
 ### 2. Write a function called fget() that finds only function objects. It should have two arguments, name and env, and should obey the regular scoping rules for functions: if there’s an object with a matching name that’s not a function, look in the parent. For an added challenge, also add an inherits argument which controls whether the function recurses up the parents or only looks in one environment.
 
+## 7.4.5 Exercises
+### 1. How is search_envs() different from env_parents(global_env())?
 
+
+```r
+search_envs()
+```
+
+```
+##  [[1]] $ <env: global>
+##  [[2]] $ <env: package:rlang>
+##  [[3]] $ <env: package:stats>
+##  [[4]] $ <env: package:graphics>
+##  [[5]] $ <env: package:grDevices>
+##  [[6]] $ <env: package:utils>
+##  [[7]] $ <env: package:datasets>
+##  [[8]] $ <env: package:methods>
+##  [[9]] $ <env: Autoloads>
+## [[10]] $ <env: package:base>
+```
+
+
+```r
+env_parents(global_env())
+```
+
+```
+##  [[1]] $ <env: package:rlang>
+##  [[2]] $ <env: package:stats>
+##  [[3]] $ <env: package:graphics>
+##  [[4]] $ <env: package:grDevices>
+##  [[5]] $ <env: package:utils>
+##  [[6]] $ <env: package:datasets>
+##  [[7]] $ <env: package:methods>
+##  [[8]] $ <env: Autoloads>
+##  [[9]] $ <env: package:base>
+## [[10]] $ <env: empty>
+```
+
+_ `search_envs()` does not show the empty environment.  Was that the point?_
+
+### 2. Draw a diagram that shows the enclosing environments of this function:
+
+
+```r
+f1 <- function(x1) {
+  f2 <- function(x2) {
+    f3 <- function(x3) {
+      x1 + x2 + x3
+    }
+    f3(3)
+  }
+  f2(2)
+}
+f1(1)
+```
+
+```
+## [1] 6
+```
+
+![](AdvR_7.4Q2.jpg)
+
+### 3. Write an enhanced version of str() that provides more information about functions. Show where the function was found and what environment it was defined in.
+
+
+```r
+str(search_envs)
+```
+
+```
+## function ()
+```
+
+
+```r
+str2 <- function(x) {
+  str(x)
+  if(is.function(x)) print(fn_env(x))
+}
+
+str2(mean)
+```
+
+```
+## function (x)  
+##  - attr(*, "srcref")= 'srcref' int [1:8] 1 9 1 27 9 27 1 1
+##   ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x1117b9650> 
+## <environment: R_GlobalEnv>
+```
+
+```r
+cat("\n")
+```
+
+```r
+str2(search_env)
+```
+
+```
+## function (name)  
+## <environment: namespace:rlang>
+```
+
+```r
+cat("\n")
+```
+
+```r
+str2(iris)
+```
+
+```
+## 'data.frame':	150 obs. of  5 variables:
+##  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+##  $ Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
+##  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
+##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
+##  $ Species     : Factor w/ 3 levels "setosa","versicolor",..: 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+## 7.5.5 Exercises
+
+### 1. Write a function that lists all the variables defined in the environment in which it was called. It should return the same results as ls().
+
+
+```r
+ls_caller <- function(x) {
+  myobj <- 1
+  cat("just ls objects:\n")
+  print(ls())
+  cat("\n\nCaller Environment Objects:\n")
+  ls(envir=rlang::caller_env())
+}
+
+ls_caller(2)
+```
+
+```
+## just ls objects:
+## [1] "myobj" "x"    
+## 
+## 
+## Caller Environment Objects:
+```
+
+```
+##  [1] "a"         "e1"        "e2"        "e3a"       "e3b"       "e5"       
+##  [7] "env_poke2" "f1"        "ls_caller" "mean"      "rebind"    "str2"     
+## [13] "where"     "where_all"
+```
+
+```r
+#check it...
+ls()
+```
+
+```
+##  [1] "a"         "e1"        "e2"        "e3a"       "e3b"       "e5"       
+##  [7] "env_poke2" "f1"        "ls_caller" "mean"      "rebind"    "str2"     
+## [13] "where"     "where_all"
+```

@@ -219,3 +219,22 @@ str2(search_env)
 cat("\n")
 str2(iris)
 ```
+
+## 7.5.5 Exercises
+
+### 1. Write a function that lists all the variables defined in the environment in which it was called. It should return the same results as ls().
+
+```{r}
+ls_caller <- function(x) {
+  myobj <- 1
+  cat("just ls objects:\n")
+  print(ls())
+  cat("\n\nCaller Environment Objects:\n")
+  ls(envir=rlang::caller_env())
+}
+
+ls_caller(2)
+
+#check it...
+ls()
+```
