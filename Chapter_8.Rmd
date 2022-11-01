@@ -1,0 +1,45 @@
+---
+title: "Chapter 8"
+author: "Julin Maloof"
+date: "2022-11-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(rlang)
+```
+
+## 8.2.4 Exercises
+
+### 1. Write a wrapper around file.remove() that throws an error if the file to be deleted does not exist.
+
+```{r, error=TRUE}
+
+file.remove2 <- function(...) {
+  for(f in list(...)) 
+      if(!file.exists(f)) abort(paste0("File '", f, "' does not exist!"))
+  file.remove(...)
+}
+
+
+file.create("chapter8testfile.txt")
+
+file.remove2("chapter8testfile.txt")
+
+file.create("chapter8testfile2.txt")
+
+file.remove2("chapter8testfile2.txt", "a")
+
+file.remove2("chapter8testfile2.txt")
+
+```
+
+
+### 2. What does the appendLF argument to message() do? How is it related to cat()
+
+_adds a newline.  cat() does not do this_
