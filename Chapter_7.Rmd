@@ -215,6 +215,8 @@ str2 <- function(x) {
 
 str2(mean)
 cat("\n")
+str2(f1)
+cat("\n")
 str2(search_env)
 cat("\n")
 str2(iris)
