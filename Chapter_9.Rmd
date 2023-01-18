@@ -1,0 +1,254 @@
+---
+title: "Chapter 9"
+author: "Julin Maloof"
+date: "2023-01-16"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 9
+
+```{r}
+library(tidyverse)
+```
+
+
+## 9.2.6 Exercises
+
+### 1. 
+Use `as_mapper()` to explore how purrr generates anonymous functions for the integer, character, and list helpers. What helper allows you to extract attributes? Read the documentation to find out.
+
+```{r}
+f <- as_mapper(~ . + 1)
+f
+f(1:3)
+```
+```{r}
+f <- as_mapper(2)
+f
+f(3:1)
+```
+
+
+```{r}
+f <- as_mapper(c("a", "b", "c"))
+f
+f(1:3)
+f(c(a=4,b=3, c=1))
+f(list(a=4,b=3,c=1))
+f(list(a=list(b=list(c=23))))
+```
+Ahhh, each argument takes you one level deeper into the list
+
+Can use attr_getter
+
+```{r}
+f <- attr_getter("class")
+f
+f(mpg)
+```
+
+
+### 2.
+map(1:3, ~ runif(2)) is a useful pattern for generating random numbers, but map(1:3, runif(2)) is not. Why not? Can you explain why it returns the result that it does?
+
+```{r}
+map(1:3, ~ runif(2))
+```
+```{r}
+map(1:3, runif(2))
+```
+```{r}
+as_mapper(runif(2))
+```
+
+_In the second form, the output from `runif(2)` is taken as input to `as_mapper` and interpreted as positions? names? to extract 
+
+
+### 3.
+Use the appropriate map() function to:
+
+a. Compute the standard deviation of every column in a numeric data frame.
+
+```{r}
+df <- as_data_frame(matrix(rnorm(100),ncol=5))
+df
+
+map_dbl(df, sd)
+```
+
+
+b. Compute the standard deviation of every numeric column in a mixed data frame. (Hint: you’ll need to do it in two steps.)
+
+```{r}
+columns <- map_lgl(mpg, is.numeric)
+map_dbl(mpg[columns], sd)
+```
+Or
+
+```{r}
+mpg %>%
+  summarize(across(.cols = where(is.numeric), sd ))
+```
+
+c. Compute the number of levels for every factor in a data frame.
+
+
+```{r}
+columns <- map_lgl(iris, is.factor)
+map_dbl(iris[columns], nlevels)
+```
+
+### 4.
+The following code simulates the performance of a t-test for non-normal data. Extract the p-value from each test, then visualise.
+```{r}
+trials <- map(1:100, ~ t.test(rpois(10, 10), rpois(7, 10)))
+
+map_dbl(trials, "p.value") %>% 
+  hist()
+```
+
+### 5.
+The following code uses a map nested inside another map to apply a function to every element of a nested list. Why does it fail, and what do you need to do to make it work?
+
+```{r}
+x <- list(
+  list(1, c(3, 9)),
+  list(c(3, 6), 7, c(4, 7, 6))
+)
+
+triple <- function(x) x * 3
+
+map(x, ~ map(.x, .f= triple))
+
+#map(x, map, .f = triple)
+#> Error in .f(.x[[i]], ...): unused argument (function (.x, .f, ...)
+#> {
+#> .f <- as_mapper(.f, ...)
+#> .Call(map_impl, environment(), ".x", ".f", "list")
+#> })
+```
+_The problem was that the ".f" argument was going to the outer map._
+
+### 6.
+
+Use map() to fit linear models to the mtcars dataset using the formulas stored in this list:
+
+```{r}
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+
+map(formulas, lm, data=mtcars)
+```
+
+Better...
+
+```{r}
+tib <- tibble(formulas = list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+))
+
+tib <- tib %>% 
+  mutate(lm = map(formulas, lm, mtcars))
+
+tib %>% mutate(glance = map(lm, broom::glance)) %>% unnest(glance)
+
+tib %>% mutate(tidy = map(lm, broom::tidy)) %>% unnest(tidy)
+
+```
+
+### 7.
+
+Fit the model mpg ~ disp to each of the bootstrap replicates of mtcars in the list below, then extract the $R^2$ of the model fit (Hint: you can compute the $R^2$ with summary().)
+
+```{r}
+bootstrap <- function(df) {
+  df[sample(nrow(df), replace = TRUE), , drop = FALSE]
+}
+
+bootstraps <- map(1:10, ~ bootstrap(mtcars))
+
+map(bootstraps, ~ lm(mpg ~ disp, .x)) %>%
+  map(summary) %>%
+  map_dbl("r.squared")
+```
+
+## 9.4.6 Exercises
+
+### 1.
+Explain the results of modify(mtcars, 1).
+
+```{r}
+mtcars
+```
+
+```{r}
+modify(mtcars, 1)
+```
+_clearly it is taking the first row, but keeps the rownames.  I would have thought it would keep the first column._
+
+_Oh, I see it is going to go through each item in the last (each column) and then take the first item there_
+
+
+### 2.
+Rewrite the following code to use iwalk() instead of walk2(). What are the advantages and disadvantages?
+
+```{r}
+temp <- "./temp"
+cyls <- split(mtcars, mtcars$cyl)
+paths <- file.path(temp, paste0("cyl-", names(cyls), ".csv"))
+walk2(cyls, paths, write.csv)
+```
+
+```{r}
+cyls <- split(mtcars, mtcars$cyl)
+iwalk(cyls, ~ write.csv(.x, file.path(temp, paste0("cyl-", .y, ".csv"))))
+```
+
+_fewer lines and variable, but maybe harder to read_
+
+### 3. Explain how the following code transforms a data frame using functions stored in a list.
+
+```{r}
+trans <- list(
+  disp = function(x) x * 0.0163871,
+  am = function(x) factor(x, labels = c("auto", "manual"))
+)
+
+nm <- names(trans)
+mtcars[nm] <- map2(trans, mtcars[nm], function(f, var) f(var))
+```
+
+_trans is a list of 2 functions; mtcars[nm] is a list of 2 columns.  map applies the first function to the first column, etc_.
+
+Compare and contrast the map2() approach to this map() approach:
+
+```{r}
+mtcars[nm] <- map(nm, ~ trans[[.x]](mtcars[[.x]]))
+```
+
+_ugly!_
+
+### 4.
+What does write.csv() return, i.e. what happens if you use it with map2() instead of walk2()?
+
+```{r}
+temp <- "./temp"
+cyls <- split(mtcars, mtcars$cyl)
+paths <- file.path(temp, paste0("cyl-", names(cyls), ".csv"))
+map2(cyls, paths, write.csv)
+```
+
+_NULL_
