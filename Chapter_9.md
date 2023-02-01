@@ -18,10 +18,10 @@ library(tidyverse)
 
 ```
 ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-## ✔ ggplot2 3.3.6      ✔ purrr   0.3.4 
+## ✔ ggplot2 3.4.0      ✔ purrr   1.0.1 
 ## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
-## ✔ tidyr   1.2.0      ✔ stringr 1.4.1 
-## ✔ readr   2.1.2      ✔ forcats 0.5.2 
+## ✔ tidyr   1.3.0      ✔ stringr 1.5.0 
+## ✔ readr   2.1.3      ✔ forcats 0.5.2 
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
@@ -62,8 +62,8 @@ f
 
 ```
 ## function (x, ...) 
-## pluck(x, 2, .default = NULL)
-## <environment: 0x123bca7e0>
+## pluck_raw(x, list(2), .default = NULL)
+## <environment: 0x11a3a4270>
 ```
 
 ```r
@@ -83,8 +83,8 @@ f
 
 ```
 ## function (x, ...) 
-## pluck(x, "a", "b", "c", .default = NULL)
-## <environment: 0x123ecf790>
+## pluck_raw(x, list("a", "b", "c"), .default = NULL)
+## <environment: 0x11948b0d0>
 ```
 
 ```r
@@ -131,8 +131,8 @@ f
 ```
 ## function (x) 
 ## attr(x, attr, exact = TRUE)
-## <bytecode: 0x1242aeb10>
-## <environment: 0x1242ae7c8>
+## <bytecode: 0x10fbd46e8>
+## <environment: 0x10fbd4a30>
 ```
 
 ```r
@@ -154,13 +154,13 @@ map(1:3, ~ runif(2))
 
 ```
 ## [[1]]
-## [1] 0.9941078 0.9550497
+## [1] 0.9948546 0.8536885
 ## 
 ## [[2]]
-## [1] 0.2377857 0.7361001
+## [1] 0.9317614 0.3424511
 ## 
 ## [[3]]
-## [1] 0.04844734 0.12811884
+## [1] 0.8489826 0.1375176
 ```
 
 ```r
@@ -169,13 +169,13 @@ map(1:3, runif(2))
 
 ```
 ## [[1]]
-## NULL
+## [1] 1
 ## 
 ## [[2]]
-## NULL
+## [1] 2
 ## 
 ## [[3]]
-## NULL
+## [1] 3
 ```
 
 ```r
@@ -184,8 +184,8 @@ as_mapper(runif(2))
 
 ```
 ## function (x, ...) 
-## pluck(x, 0.803714730776846, 0.556438132189214, .default = NULL)
-## <environment: 0x124819040>
+## pluck_raw(x, list(0.201595538528636, 0.444256887771189), .default = NULL)
+## <environment: 0x11be81328>
 ```
 
 _In the second form, the output from `runif(2)` is taken as input to `as_mapper` and interpreted as positions? names? to extract 
@@ -203,17 +203,16 @@ df <- as_data_frame(matrix(rnorm(100),ncol=5))
 
 ```
 ## Warning: `as_data_frame()` was deprecated in tibble 2.0.0.
-## Please use `as_tibble()` instead.
-## The signature and semantics have changed, see `?as_tibble`.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
+## ℹ Please use `as_tibble()` instead.
+## ℹ The signature and semantics have changed, see `?as_tibble`.
 ```
 
 ```
-## Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is omitted as of tibble 2.0.0.
-## Using compatibility `.name_repair`.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
+## Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if
+## `.name_repair` is omitted as of tibble 2.0.0.
+## ℹ Using compatibility `.name_repair`.
+## ℹ The deprecated feature was likely used in the tibble package.
+##   Please report the issue at <]8;;https://github.com/tidyverse/tibble/issueshttps://github.com/tidyverse/tibble/issues]8;;>.
 ```
 
 ```r
@@ -222,28 +221,28 @@ df
 
 ```
 ## # A tibble: 20 × 5
-##         V1       V2     V3     V4      V5
-##      <dbl>    <dbl>  <dbl>  <dbl>   <dbl>
-##  1  0.638  -0.00110  0.287 -2.71   0.852 
-##  2 -1.31   -0.856   -0.628 -1.38  -1.76  
-##  3  1.45    0.847    0.154  0.666  1.95  
-##  4 -0.329   0.0672  -0.515 -1.09  -0.0322
-##  5  1.41   -2.18    -0.121 -1.15  -0.285 
-##  6  1.34   -0.650   -0.628  1.27  -0.892 
-##  7 -1.00   -0.879   -1.27  -0.292  1.30  
-##  8  0.259   0.591   -0.878  0.212 -2.15  
-##  9  0.487  -0.307    0.137  0.743  0.200 
-## 10  0.934  -0.728    1.38  -1.79   1.30  
-## 11 -0.514   0.421   -2.10  -1.29  -1.71  
-## 12 -0.959  -0.412    0.625 -0.526  1.21  
-## 13 -0.0189 -0.623    0.953 -0.641  0.227 
-## 14 -0.0320  0.226   -1.12  -0.226  0.0501
-## 15  0.138  -1.06    -1.17   0.585 -0.0646
-## 16  0.387  -2.22     0.234  0.389  0.701 
-## 17  0.0692 -0.323    1.33  -1.15   0.736 
-## 18 -1.30   -0.648    1.21   0.735  1.21  
-## 19  0.272  -1.11    -1.69   0.423 -1.77  
-## 20 -0.508   1.45     0.971 -0.539 -0.578
+##         V1      V2      V3     V4      V5
+##      <dbl>   <dbl>   <dbl>  <dbl>   <dbl>
+##  1  0.232   0.227   0.152  -0.738 -2.06  
+##  2 -0.552   0.702  -0.0614  1.06  -1.17  
+##  3 -1.13   -0.554   0.329   2.50  -0.930 
+##  4  0.620  -0.944   0.166  -0.327 -0.666 
+##  5 -0.823  -0.539  -0.586   1.15  -1.21  
+##  6 -1.84   -0.510   0.903  -0.192  0.192 
+##  7 -0.355  -0.381  -0.467  -0.617  0.167 
+##  8  0.925   0.567   0.698   0.450  0.415 
+##  9 -0.276  -0.212  -0.523   1.03  -1.24  
+## 10 -0.425   1.53    0.964  -0.698 -1.67  
+## 11  0.736   0.726  -1.27    0.465  0.123 
+## 12  1.06    1.24   -0.551   1.07  -2.96  
+## 13  1.38    0.358   0.259  -0.615 -0.0179
+## 14 -0.0658  0.717   0.335   0.522  0.156 
+## 15  1.24    1.76    0.762  -1.91  -0.167 
+## 16 -0.980  -0.0660 -0.770  -0.794  0.252 
+## 17 -1.07    0.179  -0.174  -0.545 -1.38  
+## 18 -1.23    0.522  -0.817   0.238  0.0367
+## 19  1.46    0.855  -1.66   -0.484  0.886 
+## 20 -0.0852 -0.695   1.35    1.77   0.413
 ```
 
 ```r
@@ -252,7 +251,7 @@ map_dbl(df, sd)
 
 ```
 ##        V1        V2        V3        V4        V5 
-## 0.8455983 0.9037792 1.0384383 1.0240635 1.1909832
+## 0.9769210 0.7599802 0.7854698 1.0514679 0.9959031
 ```
 
 
@@ -478,8 +477,8 @@ map(bootstraps, ~ lm(mpg ~ disp, .x)) %>%
 ```
 
 ```
-##  [1] 0.7283290 0.7093970 0.8260510 0.7229403 0.7655010 0.7077993 0.7991398
-##  [8] 0.7447954 0.7183999 0.7278988
+##  [1] 0.5899277 0.7261259 0.6631362 0.7634222 0.6202728 0.6363056 0.7375201
+##  [8] 0.7609964 0.7045286 0.6977526
 ```
 
 ## 9.4.6 Exercises
@@ -534,39 +533,39 @@ modify(mtcars, 1)
 ```
 
 ```
-##                     mpg cyl disp  hp drat   wt  qsec vs am gear carb
-## Mazda RX4            21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Mazda RX4 Wag        21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Datsun 710           21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Hornet 4 Drive       21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Hornet Sportabout    21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Valiant              21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Duster 360           21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 240D            21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 230             21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 280             21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 280C            21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 450SE           21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 450SL           21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Merc 450SLC          21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Cadillac Fleetwood   21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Lincoln Continental  21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Chrysler Imperial    21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Fiat 128             21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Honda Civic          21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Toyota Corolla       21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Toyota Corona        21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Dodge Challenger     21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## AMC Javelin          21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Camaro Z28           21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Pontiac Firebird     21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Fiat X1-9            21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Porsche 914-2        21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Lotus Europa         21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Ford Pantera L       21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Ferrari Dino         21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Maserati Bora        21   6  160 110  3.9 2.62 16.46  0  1    4    4
-## Volvo 142E           21   6  160 110  3.9 2.62 16.46  0  1    4    4
+##    mpg cyl disp  hp drat   wt  qsec vs am gear carb
+## 1   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 2   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 3   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 4   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 5   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 6   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 7   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 8   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 9   21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 10  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 11  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 12  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 13  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 14  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 15  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 16  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 17  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 18  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 19  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 20  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 21  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 22  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 23  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 24  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 25  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 26  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 27  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 28  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 29  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 30  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 31  21   6  160 110  3.9 2.62 16.46  0  1    4    4
+## 32  21   6  160 110  3.9 2.62 16.46  0  1    4    4
 ```
 _clearly it is taking the first row, but keeps the rownames.  I would have thought it would keep the first column._
 
@@ -638,4 +637,174 @@ map2(cyls, paths, write.csv)
 ## NULL
 ```
 
-_NULL_
+## 9.6.3 Exercises
+
+### 1.  Why isn’t is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
+
+My understanding is that a predicate function is one that will return a single value regardless of the length of the input.  `is.na()` is vectorized and so will return values the same length as the object. 
+
+`anyNA()` is a predicate version of this.
+
+
+```r
+x <- c(1,2,3,NA,4,NA,5)
+is.na(x)
+```
+
+```
+## [1] FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE
+```
+
+```r
+anyNA(x)
+```
+
+```
+## [1] TRUE
+```
+
+
+### 2. simple_reduce() has a problem when x is length 0 or length 1. Describe the source of the problem and how you might go about fixing it.
+
+
+```r
+simple_reduce <- function(x, f) {
+  out <- x[[1]]
+  for (i in seq(2, length(x))) {
+    out <- f(out, x[[i]])
+  }
+  out
+}
+
+simple_reduce(1:10, max)
+```
+
+```
+## [1] 10
+```
+
+```r
+simple_reduce(1, max)
+```
+
+```
+## Error in x[[i]]: subscript out of bounds
+```
+
+The problem is the seq command that assumes x is at least length 2.  Adding an init value will solve length =1 problems.  And maybe just returning NULL if length = 0.
+
+### 3. Implement the span() function from Haskell: given a list x and a predicate function f, span(x, f) returns the location of the longest sequential run of elements where the predicate is true. (Hint: you might find rle() helpful.)
+
+
+```r
+x <- list(1:5, 8:9, 5, c("a","b"), LETTERS, 10:12, letters)
+
+span <- function(x, f){
+  rlex <- map(x, f) %>%
+    unlist() %>%
+    rle()
+  
+  start <- NULL
+  end <- NULL
+  best <- 0
+  for(i in 1:length(rlex$lengths)) {
+    if (rlex$values[i] & (rlex$lengths[i] > best)) {
+      #update
+      best <- rlex$lengths[i]
+      end <- sum(rlex$lengths[1:i])
+      start <- end - rlex$lengths[i] + 1
+    }
+  }
+  return(c(start, end))
+}
+
+span(x, is.character)
+```
+
+```
+## [1] 4 5
+```
+
+
+### 4. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
+
+
+```r
+arg_max <- function(x, f) {
+  x[which.max(map(x, f))]
+}
+
+arg_max(-10:5, function(x) x ^ 2)
+```
+
+```
+## [1] -10
+```
+
+```r
+arg_max(5:-10, function(x) x ^ 2)
+```
+
+```
+## [1] -10
+```
+
+
+### 5. The function below scales a vector so it falls in the range [0, 1]. How would you apply it to every column of a data frame? How would you apply it to every numeric column in a data frame?
+
+
+```r
+scale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+
+```r
+modify_if(diamonds, is.numeric, scale01)
+```
+
+```
+## # A tibble: 53,940 × 10
+##      carat cut       color clarity depth table     price     x      y      z
+##      <dbl> <ord>     <ord> <ord>   <dbl> <dbl>     <dbl> <dbl>  <dbl>  <dbl>
+##  1 0.00624 Ideal     E     SI2     0.514 0.231 0         0.368 0.0676 0.0764
+##  2 0.00208 Premium   E     SI1     0.467 0.346 0         0.362 0.0652 0.0726
+##  3 0.00624 Good      E     VS1     0.386 0.423 0.0000541 0.377 0.0691 0.0726
+##  4 0.0187  Premium   I     VS2     0.539 0.288 0.000433  0.391 0.0718 0.0827
+##  5 0.0229  Good      J     SI2     0.564 0.288 0.000487  0.404 0.0739 0.0865
+##  6 0.00832 Very Good J     VVS2    0.55  0.269 0.000541  0.367 0.0672 0.0780
+##  7 0.00832 Very Good I     VVS1    0.536 0.269 0.000541  0.368 0.0676 0.0777
+##  8 0.0125  Very Good H     SI1     0.525 0.231 0.000595  0.379 0.0698 0.0796
+##  9 0.00416 Fair      E     VS2     0.614 0.346 0.000595  0.360 0.0642 0.0783
+## 10 0.00624 Very Good H     VS1     0.456 0.346 0.000649  0.372 0.0688 0.0752
+## # … with 53,930 more rows
+```
+
+## 9.7.3 Exercises
+
+### 1. How does apply() arrange the output? Read the documentation and perform some experiments.
+
+### 2. What do eapply() and rapply() do? Does purrr have equivalents?
+
+
+### 3. Challenge: read about the fixed point algorithm. Complete the exercises using R.
+
+
+```r
+fp <- function(x, FUN) {
+  abs(x-FUN(x))
+}
+
+optimize(fp, c(-10,10), function(x) x^2)
+```
+
+```
+## $minimum
+## [1] 1.000014
+## 
+## $objective
+## [1] 1.407851e-05
+```
+
