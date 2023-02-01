@@ -251,4 +251,90 @@ paths <- file.path(temp, paste0("cyl-", names(cyls), ".csv"))
 map2(cyls, paths, write.csv)
 ```
 
-_NULL_
+## 9.6.3 Exercises
+
+### 1.  Why isn’t is.na() a predicate function? What base R function is closest to being a predicate version of is.na()?
+
+My understanding is that a predicate function is one that will return a single value regardless of the length of the input.  `is.na()` is vectorized and so will return values the same length as the object. 
+
+`anyNA()` is a predicate version of this.
+
+```{r}
+x <- c(1,2,3,NA,4,NA,5)
+is.na(x)
+
+
+anyNA(x)
+
+```
+
+
+### 2. simple_reduce() has a problem when x is length 0 or length 1. Describe the source of the problem and how you might go about fixing it.
+
+```{r}
+simple_reduce <- function(x, f) {
+  out <- x[[1]]
+  for (i in seq(2, length(x))) {
+    out <- f(out, x[[i]])
+  }
+  out
+}
+
+simple_reduce(1:10, max)
+
+simple_reduce(1, max)
+```
+
+The problem is the seq command that assumes x is at least length 2.  Adding an init value will solve length =1 problems.  And maybe just returning NULL if length = 0.
+
+### 3. Implement the span() function from Haskell: given a list x and a predicate function f, span(x, f) returns the location of the longest sequential run of elements where the predicate is true. (Hint: you might find rle() helpful.)
+
+```{r}
+x <- list(1:5, 8:9, 5, c("a","b"), LETTERS, 10:12, letters)
+
+span <- function(x, f){
+  rlex <- map(x, f) %>%
+    unlist() %>%
+    rle()
+  
+  start <- NULL
+  end <- NULL
+  best <- 0
+  for(i in 1:length(rlex$lengths)) {
+    if (rlex$values[i] & (rlex$lengths[i] > best)) {
+      #update
+      best <- rlex$lengths[i]
+      end <- sum(rlex$lengths[1:i])
+      start <- end - rlex$lengths[i] + 1
+    }
+  }
+  return(c(start, end))
+}
+
+span(x, is.character)
+```
+
+
+### 4. Implement arg_max(). It should take a function and a vector of inputs, and return the elements of the input where the function returns the highest value. For example, arg_max(-10:5, function(x) x ^ 2) should return -10. arg_max(-5:5, function(x) x ^ 2) should return c(-5, 5). Also implement the matching arg_min() function.
+
+```{r}
+arg_max <- function(x, f) {
+  x[which.max(map(x, f))]
+}
+
+arg_max(-10:5, function(x) x ^ 2)
+
+arg_max(5:-10, function(x) x ^ 2)
+
+```
+
+
+### 5. The function below scales a vector so it falls in the range [0, 1]. How would you apply it to every column of a data frame? How would you apply it to every numeric column in a data frame?
+
+```{r}
+scale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
