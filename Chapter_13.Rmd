@@ -11,11 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(sloop)
+library(tidyverse)
 ```
 
 ## 13.2 Basics
 
-S3 objects hace at least a class attribute
+S3 objects have at least a class attribute
 
 ```{r}
 f <- factor(c("a", "b", "c"))
@@ -60,9 +61,35 @@ s3_methods_generic("print")
 
 1. Describe the difference between t.test() and t.data.frame(). When is each function called?
 
+_`t.test()` is a generic, so it is called when the user calls`t.test()` and then it will dispatch the correct method.  `t.dta.frame()` is a method invoked when the user calls `t()` on a dataframe object._
+
+```{r}
+ftype(t.test)
+ftype(t.data.frame)
+s3_methods_generic("t.test")
+s3_methods_generic("t")
+```
+
 2. Make a list of commonly used base R functions that contain . in their name but are not S3 methods.
 
+```{r}
+fxns <- tibble(fn_name={ls("package:base") %>%
+  str_subset(pattern=fixed("."))}) %>%
+  filter(map_lgl(fn_name, ~ {get(.) %>% is_function()})) %>%
+  filter(!map_lgl(fn_name, is_s3_method))
+
+fxns$fn_name
+```
+
+
 3. What does the as.data.frame.data.frame() method do? Why is it confusing? How could you avoid this confusion in your own code?
+
+```{r}
+as.data.frame.data.frame
+```
+`as.data.frame.data.frame` removes any class info that preceeds the data.frame class.  It also does some checking to make sure that the number of rownames matches the number of rows and throws an error if it is incorrect.  
+
+Not sure how to make this less confusing.
 
 4. Describe the difference in behaviour in these two calls.
 ```{r}
@@ -73,8 +100,16 @@ mean(some_days)
 #> [1] "2017-02-06"
 mean(unclass(some_days))
 #> [1] 17203
-```
 
+
+attributes(some_days)
+
+s3_dispatch(mean(some_days))
+
+s3_dispatch(mean(unclass(some_days)))
+
+```
+The first call used the `mean.Date` method, the second `mean.default`
 
 5. What class of object does the following code return? What base type is it built on? What attributes does it use?
 
@@ -84,8 +119,14 @@ x
 #> Empirical CDF 
 #> Call: ecdf(rpois(100, 10))
 #>  x[1:18] =  2,  3,  4,  ..., 2e+01, 2e+01
-```
+#>  
 
+attributes(x)
+
+is_function(x)
+x(5)
+```
+this returns a function based on a stepfun.
 
 
 6. What class of object does the following code return? What base type is it built on? What attributes does it use?
@@ -96,6 +137,8 @@ x
 #> 
 #>  1  2  3  4  5  6  7  8  9 10 
 #>  7  5 18 14 15 15 14  4  5  3
+
+attributes(x)
 ```
 
 
