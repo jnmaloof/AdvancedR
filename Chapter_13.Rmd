@@ -1,0 +1,103 @@
+---
+title: "Chapter 13"
+author: "Julin Maloof"
+date: "2023-03-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sloop)
+```
+
+## 13.2 Basics
+
+S3 objects hace at least a class attribute
+
+```{r}
+f <- factor(c("a", "b", "c"))
+
+typeof(f)
+attributes(f)
+
+```
+get the basetype by `unclassing`
+```{r}
+unclass(f)
+```
+
+S3 objects behave differently from their base types when passed to a generic funciton aka __genereic__.
+
+Can check if a function is a generic using `sloop::ftype()`
+
+```{r}
+ftype(print)
+ftype(summary)
+ftype(unclass)
+```
+
+generic is a middleman, matching a class to the correct implementation (method) for the function.  This is called __method dispatch__
+
+```{r}
+s3_dispatch(print(f))
+```
+
+To see a method, use `sloop::s3_get_method()`
+
+```{r}
+s3_get_method(weighted.mean.Date)
+```
+
+
+```{r}
+s3_methods_generic("print")
+```
+
+### 13.2.1 Exercises
+
+1. Describe the difference between t.test() and t.data.frame(). When is each function called?
+
+2. Make a list of commonly used base R functions that contain . in their name but are not S3 methods.
+
+3. What does the as.data.frame.data.frame() method do? Why is it confusing? How could you avoid this confusion in your own code?
+
+4. Describe the difference in behaviour in these two calls.
+```{r}
+set.seed(1014)
+some_days <- as.Date("2017-01-31") + sample(10, 5)
+
+mean(some_days)
+#> [1] "2017-02-06"
+mean(unclass(some_days))
+#> [1] 17203
+```
+
+
+5. What class of object does the following code return? What base type is it built on? What attributes does it use?
+
+```{r}
+x <- ecdf(rpois(100, 10))
+x
+#> Empirical CDF 
+#> Call: ecdf(rpois(100, 10))
+#>  x[1:18] =  2,  3,  4,  ..., 2e+01, 2e+01
+```
+
+
+
+6. What class of object does the following code return? What base type is it built on? What attributes does it use?
+
+```{r}
+x <- table(rpois(100, 5))
+x
+#> 
+#>  1  2  3  4  5  6  7  8  9 10 
+#>  7  5 18 14 15 15 14  4  5  3
+```
+
+
+
+
