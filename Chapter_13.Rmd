@@ -59,7 +59,7 @@ s3_methods_generic("print")
 
 ### 13.2.1 Exercises
 
-1. Describe the difference between t.test() and t.data.frame(). When is each function called?
+#### 1. Describe the difference between t.test() and t.data.frame(). When is each function called?
 
 _`t.test()` is a generic, so it is called when the user calls`t.test()` and then it will dispatch the correct method.  `t.dta.frame()` is a method invoked when the user calls `t()` on a dataframe object._
 
@@ -70,7 +70,7 @@ s3_methods_generic("t.test")
 s3_methods_generic("t")
 ```
 
-2. Make a list of commonly used base R functions that contain . in their name but are not S3 methods.
+#### 2. Make a list of commonly used base R functions that contain . in their name but are not S3 methods.
 
 ```{r}
 fxns <- tibble(fn_name={ls("package:base") %>%
@@ -82,7 +82,7 @@ fxns$fn_name
 ```
 
 
-3. What does the as.data.frame.data.frame() method do? Why is it confusing? How could you avoid this confusion in your own code?
+#### 3. What does the as.data.frame.data.frame() method do? Why is it confusing? How could you avoid this confusion in your own code?
 
 ```{r}
 as.data.frame.data.frame
@@ -91,7 +91,7 @@ as.data.frame.data.frame
 
 Not sure how to make this less confusing.
 
-4. Describe the difference in behaviour in these two calls.
+#### 4. Describe the difference in behaviour in these two calls.
 ```{r}
 set.seed(1014)
 some_days <- as.Date("2017-01-31") + sample(10, 5)
@@ -111,7 +111,7 @@ s3_dispatch(mean(unclass(some_days)))
 ```
 The first call used the `mean.Date` method, the second `mean.default`
 
-5. What class of object does the following code return? What base type is it built on? What attributes does it use?
+#### 5. What class of object does the following code return? What base type is it built on? What attributes does it use?
 
 ```{r}
 x <- ecdf(rpois(100, 10))
@@ -129,7 +129,7 @@ x(5)
 this returns a function based on a stepfun.
 
 
-6. What class of object does the following code return? What base type is it built on? What attributes does it use?
+#### 6. What class of object does the following code return? What base type is it built on? What attributes does it use?
 
 ```{r}
 x <- table(rpois(100, 5))
@@ -141,6 +141,129 @@ x
 attributes(x)
 ```
 
+## 13.3 Classes
+
+To make an obkect of an instance of a class, set the class attribute.  Either
+
+* use `structure` to create it
+* use `class` to set it.
+
+```{r}
+# Create and assign class in one step
+x <- structure(list(), class = "my_class")
+
+# Create, then set class
+x <- list()
+class(x) <- "my_class"
+```
+
+To check on a class of an object:
+
+* use `class` or `inherits`
+
+```{r}
+class(x)
+#> [1] "my_class"
+inherits(x, "my_class")
+#> [1] TRUE
+inherits(x, "your_class")
+#> [1] FALSE
+```
+
+### 13.3.1 Constructors
+
+Because S3 doesn't provide formal class definitions, we need to handle that ourselves.  That is, we have to make sure that each instance has the same strucure (same base type and same attributes with the same types).  To do that we build our own constructor.
+
+The constructor should follow three principles:
+
+* Be called `new_myclass` (where myclass changes to reflect the class name)
+* Have one argument for the base object and one for each attribute.
+* Check the types of the base object and attributes.
+
+Example:
+
+```{r}
+new_Date <- function(x = double()) {
+  stopifnot(is.double(x))
+  structure(x, class = "Date")
+}
+
+new_Date(c(-1, 0, 1))
+#> [1] "1969-12-31" "1970-01-01" "1970-01-02"
+```
+
+Constructors are meant for internal use.  If you are developing a package and users will be making new objects of the given class, you need a helper function.
+
+### 13.3.2 Validators
+
+```{r, error=TRUE}
+new_factor <- function(x = integer(), levels = character()) {
+  stopifnot(is.integer(x))
+  stopifnot(is.character(levels))
+
+  structure(
+    x,
+    levels = levels,
+    class = "factor"
+  )
+}
+
+new_factor(1:5, "a")
+#> Error in as.character.factor(x): malformed factor
+new_factor(0:1, "a")
+#> Error in as.character.factor(x): malformed factor
+```
 
 
+```{r, error=TRUE}
+validate_factor <- function(x) {
+  values <- unclass(x)
+  levels <- attr(x, "levels")
+
+  if (!all(!is.na(values) & values > 0)) {
+    stop(
+      "All `x` values must be non-missing and greater than zero",
+      call. = FALSE
+    )
+  }
+
+  if (length(levels) < max(values)) {
+    stop(
+      "There must be at least as many `levels` as possible values in `x`",
+      call. = FALSE
+    )
+  }
+
+  x
+}
+
+validate_factor(new_factor(1:5, "a"))
+#> Error: There must be at least as many `levels` as possible values in `x`
+validate_factor(new_factor(0:1, "a"))
+#> Error: All `x` values must be non-missing and greater than zero
+```
+
+Why does the outer function have the opportunity to check the output of the inner function since its should already throw an error?
+
+### 13.3.3 Helpers
+
+Helpers help users create objects of a given class
+
+A helper should:
+
+* Have the same name as the class
+* finish by calling the constructor, and the validator if it exists,
+* Create carefully crafter error messages
+* Have a thoughtfully crafter user interface with good defaults
+
+### 13.3.4 Exercises
+#### 1. Write a constructor for data.frame objects. What base type is a data frame built on? What attributes does it use? What are the restrictions placed on the individual elements? What about the names?
+
+#### 2. Enhance my factor() helper to have better behaviour when one or more values is not found in levels. What does base::factor() do in this situation?
+
+#### 3. Carefully read the source code of factor(). What does it do that my constructor does not?
+
+#### 4. Factors have an optional “contrasts” attribute. Read the help for C(), and briefly describe the purpose of the attribute. What type should it have? Rewrite the new_factor() constructor to include this attribute.
+
+#### 5. Read the documentation for utils::as.roman(). How would you write a constructor for this class? Does it need a validator? What might a helper do?
 
