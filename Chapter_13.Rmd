@@ -2,7 +2,9 @@
 title: "Chapter 13"
 author: "Julin Maloof"
 date: "2023-03-04"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -259,11 +261,160 @@ A helper should:
 ### 13.3.4 Exercises
 #### 1. Write a constructor for data.frame objects. What base type is a data frame built on? What attributes does it use? What are the restrictions placed on the individual elements? What about the names?
 
+attributes are names, row.names, and class
+
+```{r}
+new_data.frame <- function(..., row.names=NULL, check.names=TRUE) {
+  df <- list(...)
+ # df <- list(a=1:10, b=5)
+  lengths <- sapply(df, length)
+  nrow <- max(lengths)
+  if (!all(lengths==nrow)) {
+    df[lengths!=nrow] <- lapply(df[lengths!=nrow], rep, length.out=nrow)
+  }
+  if(check.names) names(df) <- make.names(names(df), unique=TRUE)
+  if(is.null(row.names)) row.names<-1:nrow
+  class(df) <- "data.frame"
+  attr(df, "row.names") <- row.names
+  df
+}
+
+mydf <- new_data.frame(a=1:10, b=5, c("a","b"), d=LETTERS[1:10], "JM")
+
+mydf
+
+attributes(mydf)
+```
+There are many things that I am not dealing with here, including, what if the user passes matrices, lists, data.frames, etc, to the constuctor.  Plus I am handling ragged lengths differently from default.
+
 #### 2. Enhance my factor() helper to have better behaviour when one or more values is not found in levels. What does base::factor() do in this situation?
+
+
+```{r}
+base::factor(1:10, levels=c(1:9) )
+base::factor(1:10, levels=1:9)  %>% as.integer()
+```
+
+The base function will convert that value to an NA
+
+```{r}
+new_factor <- function(x = integer(), levels = character()) {
+  stopifnot(is.integer(x))
+  stopifnot(is.character(levels))
+
+  structure(
+    x,
+    levels = levels,
+    class = "factor"
+  )
+}
+
+validate_factor <- function(x) {
+  values <- unclass(x)
+  levels <- attr(x, "levels")
+
+  if (!all(!is.na(values) & values > 0)) {
+    stop(
+      "All `x` values must be non-missing and greater than zero",
+      call. = FALSE
+    )
+  }
+
+  if (length(levels) < max(values)) {
+    stop(
+      "There must be at least as many `levels` as possible values in `x`",
+      call. = FALSE
+    )
+  }
+
+  x
+}
+
+validate_factor2 <- function(x) {
+  values <- unclass(x)
+  levels <- attr(x, "levels")
+
+  if (!all(na.omit(values) > 0)) {
+    stop(
+      "All `x` values must be greater than zero",
+      call. = FALSE
+    )
+  }
+
+  if (length(levels) < max(values, na.rm = TRUE)) {
+    stop(
+      "There must be at least as many `levels` as possible values in `x`",
+      call. = FALSE
+    )
+  }
+
+  x
+}
+
+factor <- function(x = character(), levels = unique(x)) {
+  ind <- match(x, levels)
+  validate_factor(new_factor(ind, levels))
+}
+
+
+factor2 <- function(x = character(), levels = unique(x)) {
+  ind <- match(x, levels)
+  validate_factor2(new_factor(ind, levels))
+}
+```
+
+```{r,, error=TRUE}
+base::factor(1:10, as.character(9:1))
+
+factor2(1:10, as.character(9:1))
+```
+Hmmm I ended up changing the validtaion function, not the helper function.  probably I did something wrong.
 
 #### 3. Carefully read the source code of factor(). What does it do that my constructor does not?
 
+Deals with ordeered, deals with exclude, but probably he is getting at something else.
+
 #### 4. Factors have an optional “contrasts” attribute. Read the help for C(), and briefly describe the purpose of the attribute. What type should it have? Rewrite the new_factor() constructor to include this attribute.
 
+The attribute determiens the type of statistical contrasts applied in aov and lm
+
+```{r}
+new_factor <- function(x = integer(), levels = character(), contrasts=NULL, how.many=NULL) {
+  stopifnot(is.integer(x))
+  stopifnot(is.character(levels))
+
+  f <- structure(
+    x,
+    levels = levels,
+    class = "factor"
+  )
+  
+  if(!is.null(contrasts)) {
+    if(!is.null(how.many)) how.many <- nlevels(f)
+    f <-C(f, contrasts, how.many)
+  }
+  
+  f
+}
+
+new_factor(1:10, levels=LETTERS[1:10])
+new_factor(1:10, levels=LETTERS[1:10], contrasts = "contr.helmert")
+```
+
+
 #### 5. Read the documentation for utils::as.roman(). How would you write a constructor for this class? Does it need a validator? What might a helper do?
+
+constructor could take roman or latin numbers.  If latin, would need to do a series of integer division and keep track of the remainder from each (to be the numerator in the next division).  If roman, would need to get the latin representation
+
+validator should make sure that numbers are integers between 1 and 3899
+
+Not sure about a helper
+
+```{r}
+three <- as.roman(3)
+
+attributes(three)
+
+str(three)
+```
 
