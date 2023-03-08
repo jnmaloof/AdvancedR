@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-
+ 
 ## 9.2.6 Exercises
 
 ### 1. 
