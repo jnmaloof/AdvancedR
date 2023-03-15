@@ -407,7 +407,7 @@ dispatch</strong></p>
 <pre class="r"><code>s3_get_method(weighted.mean.Date)</code></pre>
 <pre><code>## function (x, w, ...) 
 ## .Date(weighted.mean(unclass(x), w, ...))
-## &lt;bytecode: 0x11989f668&gt;
+## &lt;bytecode: 0x12b083e40&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <pre class="r"><code>s3_methods_generic(&quot;print&quot;)</code></pre>
 <pre><code>## # A tibble: 306 × 4
@@ -598,7 +598,7 @@ confusing? How could you avoid this confusion in your own code?</h4>
 ##     }
 ##     x
 ## }
-## &lt;bytecode: 0x119ec24f0&gt;
+## &lt;bytecode: 0x12b41bfc8&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <p><code>as.data.frame.data.frame</code> removes any class info that
 preceeds the data.frame class. It also does some checking to make sure
@@ -1001,6 +1001,249 @@ attributes(three)</code></pre>
 <pre><code>##  &#39;roman&#39; int III</code></pre>
 </div>
 </div>
+</div>
+<div id="generics-and-methods" class="section level2">
+<h2>13.4 Generics and Methods</h2>
+<div id="method-dispatch" class="section level3">
+<h3>13.4.1 Method Dispatch</h3>
+<p>Generics use <code>UseMethod()</code> to dispatch to the correct
+method.</p>
+<p>We can see what is being chosen using
+<code>sloop::s3_dispatch()</code></p>
+<pre class="r"><code>x &lt;- Sys.Date()
+s3_dispatch(print(x))</code></pre>
+<pre><code>## =&gt; print.Date
+##  * print.default</code></pre>
+</div>
+<div id="finding-methods" class="section level3">
+<h3>13.4.2 Finding methods</h3>
+<p>Use <code>sloop::s3_methods_generic</code> (for a method) or
+<code>sloop::s3_methods_class()</code> for a class</p>
+<pre class="r"><code>s3_methods_generic(&quot;mean&quot;)</code></pre>
+<pre><code>## # A tibble: 7 × 4
+##   generic class      visible source             
+##   &lt;chr&gt;   &lt;chr&gt;      &lt;lgl&gt;   &lt;chr&gt;              
+## 1 mean    Date       TRUE    base               
+## 2 mean    default    TRUE    base               
+## 3 mean    difftime   TRUE    base               
+## 4 mean    POSIXct    TRUE    base               
+## 5 mean    POSIXlt    TRUE    base               
+## 6 mean    quosure    FALSE   registered S3method
+## 7 mean    vctrs_vctr FALSE   registered S3method</code></pre>
+<pre class="r"><code>s3_methods_class(&quot;ordered&quot;)</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   generic       class   visible source             
+##   &lt;chr&gt;         &lt;chr&gt;   &lt;lgl&gt;   &lt;chr&gt;              
+## 1 as.data.frame ordered TRUE    base               
+## 2 Ops           ordered TRUE    base               
+## 3 relevel       ordered FALSE   registered S3method
+## 4 scale_type    ordered FALSE   registered S3method
+## 5 Summary       ordered TRUE    base               
+## 6 type_sum      ordered FALSE   registered S3method</code></pre>
+</div>
+<div id="creating-methods" class="section level3">
+<h3>13.4.3 Creating Methods</h3>
+<p>Only write a method if you own the generic or the class</p>
+<p>A method must have the same arguments as its generic.</p>
+</div>
+<div id="exercises-2" class="section level3">
+<h3>13.4.4 Exercises</h3>
+<div id="read-the-source-code-for-t-and-t.test-and-confirm-that-t.test-is-an-s3-generic-and-not-an-s3-method.-what-happens-if-you-create-an-object-with-class-test-and-call-t-with-it-why" class="section level4">
+<h4>1. Read the source code for t() and t.test() and confirm that
+t.test() is an S3 generic and not an S3 method. What happens if you
+create an object with class test and call t() with it? Why?</h4>
+<pre class="r"><code>?t
+?t.test
+
+s3_dispatch(t.test(rnorm(10)))</code></pre>
+<pre><code>##    t.test.double
+##    t.test.numeric
+## =&gt; t.test.default</code></pre>
+<pre class="r"><code>result &lt;- t.test(rnorm(10))
+
+print(&quot;t.test result&quot;)</code></pre>
+<pre><code>## [1] &quot;t.test result&quot;</code></pre>
+<pre class="r"><code>result</code></pre>
+<pre><code>## 
+##  One Sample t-test
+## 
+## data:  rnorm(10)
+## t = 2.0548, df = 9, p-value = 0.07007
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  -0.07766228  1.61697685
+## sample estimates:
+## mean of x 
+## 0.7696573</code></pre>
+<pre class="r"><code>print(&quot;str of t.test result&quot;)</code></pre>
+<pre><code>## [1] &quot;str of t.test result&quot;</code></pre>
+<pre class="r"><code>str(result)</code></pre>
+<pre><code>## List of 10
+##  $ statistic  : Named num 2.05
+##   ..- attr(*, &quot;names&quot;)= chr &quot;t&quot;
+##  $ parameter  : Named num 9
+##   ..- attr(*, &quot;names&quot;)= chr &quot;df&quot;
+##  $ p.value    : num 0.0701
+##  $ conf.int   : num [1:2] -0.0777 1.617
+##   ..- attr(*, &quot;conf.level&quot;)= num 0.95
+##  $ estimate   : Named num 0.77
+##   ..- attr(*, &quot;names&quot;)= chr &quot;mean of x&quot;
+##  $ null.value : Named num 0
+##   ..- attr(*, &quot;names&quot;)= chr &quot;mean&quot;
+##  $ stderr     : num 0.375
+##  $ alternative: chr &quot;two.sided&quot;
+##  $ method     : chr &quot;One Sample t-test&quot;
+##  $ data.name  : chr &quot;rnorm(10)&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;htest&quot;</code></pre>
+<pre class="r"><code>print(&quot;t(result)&quot;)</code></pre>
+<pre><code>## [1] &quot;t(result)&quot;</code></pre>
+<pre class="r"><code>t(result)</code></pre>
+<pre><code>## 
+## 
+## 
+## data:</code></pre>
+<pre class="r"><code>print(&quot;str(t(result))&quot;)</code></pre>
+<pre><code>## [1] &quot;str(t(result))&quot;</code></pre>
+<pre class="r"><code>str(t(result))</code></pre>
+<pre><code>## List of 10
+##  $ : Named num 2.05
+##   ..- attr(*, &quot;names&quot;)= chr &quot;t&quot;
+##  $ : Named num 9
+##   ..- attr(*, &quot;names&quot;)= chr &quot;df&quot;
+##  $ : num 0.0701
+##  $ : num [1:2] -0.0777 1.617
+##   ..- attr(*, &quot;conf.level&quot;)= num 0.95
+##  $ : Named num 0.77
+##   ..- attr(*, &quot;names&quot;)= chr &quot;mean of x&quot;
+##  $ : Named num 0
+##   ..- attr(*, &quot;names&quot;)= chr &quot;mean&quot;
+##  $ : num 0.375
+##  $ : chr &quot;two.sided&quot;
+##  $ : chr &quot;One Sample t-test&quot;
+##  $ : chr &quot;rnorm(10)&quot;
+##  - attr(*, &quot;dim&quot;)= int [1:2] 1 10
+##  - attr(*, &quot;dimnames&quot;)=List of 2
+##   ..$ : NULL
+##   ..$ : chr [1:10] &quot;statistic&quot; &quot;parameter&quot; &quot;p.value&quot; &quot;conf.int&quot; ...
+##  - attr(*, &quot;class&quot;)= chr &quot;htest&quot;</code></pre>
+<pre class="r"><code>print(&quot;s3_dispatch(t(result))&quot;)</code></pre>
+<pre><code>## [1] &quot;s3_dispatch(t(result))&quot;</code></pre>
+<pre class="r"><code>s3_dispatch(t(result))</code></pre>
+<pre><code>##    t.htest
+## =&gt; t.default</code></pre>
+<pre class="r"><code>t_result &lt;- t(result)
+print(t_result)</code></pre>
+<pre><code>## 
+## 
+## 
+## data:</code></pre>
+<pre class="r"><code>s3_dispatch(print(t_result))</code></pre>
+<pre><code>## =&gt; print.htest
+##  * print.default</code></pre>
+<pre class="r"><code>unclass(t_result)</code></pre>
+<pre><code>##      statistic parameter p.value    conf.int  estimate  null.value stderr   
+## [1,] 2.054816  9         0.07006562 numeric,2 0.7696573 0          0.3745626
+##      alternative method              data.name  
+## [1,] &quot;two.sided&quot; &quot;One Sample t-test&quot; &quot;rnorm(10)&quot;</code></pre>
+<p>So <code>t()</code> does its thing but keeps the class as “htest” so
+<code>print</code> uses the htest method and messes it up.</p>
+<pre class="r"><code>x &lt;- structure(1:10, class = &quot;test&quot;)
+x</code></pre>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10
+## attr(,&quot;class&quot;)
+## [1] &quot;test&quot;</code></pre>
+<pre class="r"><code>t(x)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+## [1,]    1    2    3    4    5    6    7    8    9    10
+## attr(,&quot;class&quot;)
+## [1] &quot;test&quot;</code></pre>
+</div>
+<div id="what-generics-does-the-table-class-have-methods-for" class="section level4">
+<h4>2. What generics does the table class have methods for?</h4>
+<pre class="r"><code>s3_methods_class(&quot;table&quot;)</code></pre>
+<pre><code>## # A tibble: 11 × 4
+##    generic       class visible source             
+##    &lt;chr&gt;         &lt;chr&gt; &lt;lgl&gt;   &lt;chr&gt;              
+##  1 [             table TRUE    base               
+##  2 aperm         table TRUE    base               
+##  3 as_tibble     table FALSE   registered S3method
+##  4 as.data.frame table TRUE    base               
+##  5 Axis          table FALSE   registered S3method
+##  6 lines         table FALSE   registered S3method
+##  7 plot          table FALSE   registered S3method
+##  8 points        table FALSE   registered S3method
+##  9 print         table TRUE    base               
+## 10 summary       table TRUE    base               
+## 11 tail          table FALSE   registered S3method</code></pre>
+</div>
+<div id="what-generics-does-the-ecdf-class-have-methods-for" class="section level4">
+<h4>3. What generics does the ecdf class have methods for?</h4>
+<pre class="r"><code>s3_methods_class(&quot;ecdf&quot;)</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   generic  class visible source             
+##   &lt;chr&gt;    &lt;chr&gt; &lt;lgl&gt;   &lt;chr&gt;              
+## 1 plot     ecdf  TRUE    stats              
+## 2 print    ecdf  FALSE   registered S3method
+## 3 quantile ecdf  FALSE   registered S3method
+## 4 summary  ecdf  FALSE   registered S3method</code></pre>
+</div>
+<div id="which-base-generic-has-the-greatest-number-of-defined-methods" class="section level4">
+<h4>4. Which base generic has the greatest number of defined
+methods?</h4>
+<pre class="r"><code>fxns &lt;- tibble(fn_name=ls(&quot;package:base&quot;)) %&gt;%
+    filter(map_lgl(fn_name, ~ {get(.) %&gt;% is_function()})) %&gt;%
+  filter(map_lgl(fn_name, is_s3_generic)) %&gt;%
+  mutate(methods=map(fn_name, s3_methods_generic)) %&gt;%
+  mutate(n.methods=map_int(methods, nrow)) %&gt;%
+  arrange(desc(n.methods))
+
+fxns</code></pre>
+<pre><code>## # A tibble: 172 × 3
+##    fn_name       methods            n.methods
+##    &lt;chr&gt;         &lt;list&gt;                 &lt;int&gt;
+##  1 print         &lt;tibble [307 × 4]&gt;       307
+##  2 format        &lt;tibble [137 × 4]&gt;       137
+##  3 [             &lt;tibble [58 × 4]&gt;         58
+##  4 summary       &lt;tibble [44 × 4]&gt;         44
+##  5 as.character  &lt;tibble [41 × 4]&gt;         41
+##  6 plot          &lt;tibble [34 × 4]&gt;         34
+##  7 as.data.frame &lt;tibble [33 × 4]&gt;         33
+##  8 [[            &lt;tibble [25 × 4]&gt;         25
+##  9 [&lt;-           &lt;tibble [21 × 4]&gt;         21
+## 10 c             &lt;tibble [19 × 4]&gt;         19
+## # … with 162 more rows</code></pre>
+</div>
+<div id="carefully-read-the-documentation-for-usemethod-and-explain-why-the-following-code-returns-the-results-that-it-does.-what-two-usual-rules-of-function-evaluation-does-usemethod-violate" class="section level4">
+<h4>5. Carefully read the documentation for UseMethod() and explain why
+the following code returns the results that it does. What two usual
+rules of function evaluation does UseMethod() violate?</h4>
+<pre class="r"><code>g &lt;- function(x) {
+  x &lt;- 10
+  y &lt;- 10
+  UseMethod(&quot;g&quot;)
+}
+g.default &lt;- function(x) c(x = x, y = y)
+
+x &lt;- 1
+y &lt;- 1
+g(x)</code></pre>
+<pre><code>##  x  y 
+##  1 10</code></pre>
+<pre class="r"><code>#&gt;  x  y 
+#&gt;  1 10</code></pre>
+<p>From help on <code>UseMethod</code> “Any local variables defined
+before the call to UseMethod are retained”</p>
+</div>
+<div id="what-are-the-arguments-to-why-is-this-a-hard-question-to-answer" class="section level4">
+<h4>6. What are the arguments to [? Why is this a hard question to
+answer?</h4>
+<pre class="r"><code>`[`</code></pre>
+<pre><code>## .Primitive(&quot;[&quot;)</code></pre>
+</div>
+</div>
+</div>
+<div id="object-styles" class="section level2">
+<h2>13.5 Object Styles</h2>
 </div>
 
 

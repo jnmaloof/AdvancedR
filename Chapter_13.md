@@ -117,7 +117,7 @@ s3_get_method(weighted.mean.Date)
 ```
 ## function (x, w, ...) 
 ## .Date(weighted.mean(unclass(x), w, ...))
-## <bytecode: 0x11989f668>
+## <bytecode: 0x12b083e40>
 ## <environment: namespace:stats>
 ```
 
@@ -349,7 +349,7 @@ as.data.frame.data.frame
 ##     }
 ##     x
 ## }
-## <bytecode: 0x119ec24f0>
+## <bytecode: 0x12b41bfc8>
 ## <environment: namespace:base>
 ```
 `as.data.frame.data.frame` removes any class info that preceeds the data.frame class.  It also does some checking to make sure that the number of rownames matches the number of rows and throws an error if it is incorrect.  
@@ -922,4 +922,394 @@ str(three)
 ```
 ##  'roman' int III
 ```
+
+## 13.4 Generics and Methods
+
+### 13.4.1 Method Dispatch
+
+Generics use `UseMethod()` to dispatch to the correct method.
+
+We can see what is being chosen using `sloop::s3_dispatch()`
+
+
+```r
+x <- Sys.Date()
+s3_dispatch(print(x))
+```
+
+```
+## => print.Date
+##  * print.default
+```
+
+
+
+### 13.4.2 Finding methods
+
+Use `sloop::s3_methods_generic` (for a method) or `sloop::s3_methods_class()` for a class
+
+
+```r
+s3_methods_generic("mean")
+```
+
+```
+## # A tibble: 7 × 4
+##   generic class      visible source             
+##   <chr>   <chr>      <lgl>   <chr>              
+## 1 mean    Date       TRUE    base               
+## 2 mean    default    TRUE    base               
+## 3 mean    difftime   TRUE    base               
+## 4 mean    POSIXct    TRUE    base               
+## 5 mean    POSIXlt    TRUE    base               
+## 6 mean    quosure    FALSE   registered S3method
+## 7 mean    vctrs_vctr FALSE   registered S3method
+```
+
+```r
+s3_methods_class("ordered")
+```
+
+```
+## # A tibble: 6 × 4
+##   generic       class   visible source             
+##   <chr>         <chr>   <lgl>   <chr>              
+## 1 as.data.frame ordered TRUE    base               
+## 2 Ops           ordered TRUE    base               
+## 3 relevel       ordered FALSE   registered S3method
+## 4 scale_type    ordered FALSE   registered S3method
+## 5 Summary       ordered TRUE    base               
+## 6 type_sum      ordered FALSE   registered S3method
+```
+
+### 13.4.3 Creating Methods
+
+Only write a method if you own the generic or the class
+
+A method must have the same arguments as its generic.
+
+### 13.4.4 Exercises
+
+#### 1. Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it? Why?
+
+
+```r
+?t
+?t.test
+
+s3_dispatch(t.test(rnorm(10)))
+```
+
+```
+##    t.test.double
+##    t.test.numeric
+## => t.test.default
+```
+
+```r
+result <- t.test(rnorm(10))
+
+print("t.test result")
+```
+
+```
+## [1] "t.test result"
+```
+
+```r
+result
+```
+
+```
+## 
+## 	One Sample t-test
+## 
+## data:  rnorm(10)
+## t = 2.0548, df = 9, p-value = 0.07007
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  -0.07766228  1.61697685
+## sample estimates:
+## mean of x 
+## 0.7696573
+```
+
+```r
+print("str of t.test result")
+```
+
+```
+## [1] "str of t.test result"
+```
+
+```r
+str(result)
+```
+
+```
+## List of 10
+##  $ statistic  : Named num 2.05
+##   ..- attr(*, "names")= chr "t"
+##  $ parameter  : Named num 9
+##   ..- attr(*, "names")= chr "df"
+##  $ p.value    : num 0.0701
+##  $ conf.int   : num [1:2] -0.0777 1.617
+##   ..- attr(*, "conf.level")= num 0.95
+##  $ estimate   : Named num 0.77
+##   ..- attr(*, "names")= chr "mean of x"
+##  $ null.value : Named num 0
+##   ..- attr(*, "names")= chr "mean"
+##  $ stderr     : num 0.375
+##  $ alternative: chr "two.sided"
+##  $ method     : chr "One Sample t-test"
+##  $ data.name  : chr "rnorm(10)"
+##  - attr(*, "class")= chr "htest"
+```
+
+```r
+print("t(result)")
+```
+
+```
+## [1] "t(result)"
+```
+
+```r
+t(result)
+```
+
+```
+## 
+## 
+## 
+## data:
+```
+
+```r
+print("str(t(result))")
+```
+
+```
+## [1] "str(t(result))"
+```
+
+```r
+str(t(result))
+```
+
+```
+## List of 10
+##  $ : Named num 2.05
+##   ..- attr(*, "names")= chr "t"
+##  $ : Named num 9
+##   ..- attr(*, "names")= chr "df"
+##  $ : num 0.0701
+##  $ : num [1:2] -0.0777 1.617
+##   ..- attr(*, "conf.level")= num 0.95
+##  $ : Named num 0.77
+##   ..- attr(*, "names")= chr "mean of x"
+##  $ : Named num 0
+##   ..- attr(*, "names")= chr "mean"
+##  $ : num 0.375
+##  $ : chr "two.sided"
+##  $ : chr "One Sample t-test"
+##  $ : chr "rnorm(10)"
+##  - attr(*, "dim")= int [1:2] 1 10
+##  - attr(*, "dimnames")=List of 2
+##   ..$ : NULL
+##   ..$ : chr [1:10] "statistic" "parameter" "p.value" "conf.int" ...
+##  - attr(*, "class")= chr "htest"
+```
+
+```r
+print("s3_dispatch(t(result))")
+```
+
+```
+## [1] "s3_dispatch(t(result))"
+```
+
+```r
+s3_dispatch(t(result))
+```
+
+```
+##    t.htest
+## => t.default
+```
+
+
+```r
+t_result <- t(result)
+print(t_result)
+```
+
+```
+## 
+## 
+## 
+## data:
+```
+
+```r
+s3_dispatch(print(t_result))
+```
+
+```
+## => print.htest
+##  * print.default
+```
+
+```r
+unclass(t_result)
+```
+
+```
+##      statistic parameter p.value    conf.int  estimate  null.value stderr   
+## [1,] 2.054816  9         0.07006562 numeric,2 0.7696573 0          0.3745626
+##      alternative method              data.name  
+## [1,] "two.sided" "One Sample t-test" "rnorm(10)"
+```
+
+So `t()` does its thing but keeps the class as "htest" so `print` uses the htest method and messes it up.
+
+
+```r
+x <- structure(1:10, class = "test")
+x
+```
+
+```
+##  [1]  1  2  3  4  5  6  7  8  9 10
+## attr(,"class")
+## [1] "test"
+```
+
+```r
+t(x)
+```
+
+```
+##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+## [1,]    1    2    3    4    5    6    7    8    9    10
+## attr(,"class")
+## [1] "test"
+```
+
+#### 2. What generics does the table class have methods for?
+
+
+```r
+s3_methods_class("table")
+```
+
+```
+## # A tibble: 11 × 4
+##    generic       class visible source             
+##    <chr>         <chr> <lgl>   <chr>              
+##  1 [             table TRUE    base               
+##  2 aperm         table TRUE    base               
+##  3 as_tibble     table FALSE   registered S3method
+##  4 as.data.frame table TRUE    base               
+##  5 Axis          table FALSE   registered S3method
+##  6 lines         table FALSE   registered S3method
+##  7 plot          table FALSE   registered S3method
+##  8 points        table FALSE   registered S3method
+##  9 print         table TRUE    base               
+## 10 summary       table TRUE    base               
+## 11 tail          table FALSE   registered S3method
+```
+
+
+#### 3. What generics does the ecdf class have methods for?
+
+
+```r
+s3_methods_class("ecdf")
+```
+
+```
+## # A tibble: 4 × 4
+##   generic  class visible source             
+##   <chr>    <chr> <lgl>   <chr>              
+## 1 plot     ecdf  TRUE    stats              
+## 2 print    ecdf  FALSE   registered S3method
+## 3 quantile ecdf  FALSE   registered S3method
+## 4 summary  ecdf  FALSE   registered S3method
+```
+
+
+#### 4. Which base generic has the greatest number of defined methods?
+
+
+```r
+fxns <- tibble(fn_name=ls("package:base")) %>%
+    filter(map_lgl(fn_name, ~ {get(.) %>% is_function()})) %>%
+  filter(map_lgl(fn_name, is_s3_generic)) %>%
+  mutate(methods=map(fn_name, s3_methods_generic)) %>%
+  mutate(n.methods=map_int(methods, nrow)) %>%
+  arrange(desc(n.methods))
+
+fxns
+```
+
+```
+## # A tibble: 172 × 3
+##    fn_name       methods            n.methods
+##    <chr>         <list>                 <int>
+##  1 print         <tibble [307 × 4]>       307
+##  2 format        <tibble [137 × 4]>       137
+##  3 [             <tibble [58 × 4]>         58
+##  4 summary       <tibble [44 × 4]>         44
+##  5 as.character  <tibble [41 × 4]>         41
+##  6 plot          <tibble [34 × 4]>         34
+##  7 as.data.frame <tibble [33 × 4]>         33
+##  8 [[            <tibble [25 × 4]>         25
+##  9 [<-           <tibble [21 × 4]>         21
+## 10 c             <tibble [19 × 4]>         19
+## # … with 162 more rows
+```
+
+#### 5. Carefully read the documentation for UseMethod() and explain why the following code returns the results that it does. What two usual rules of function evaluation does UseMethod() violate?
+
+
+```r
+g <- function(x) {
+  x <- 10
+  y <- 10
+  UseMethod("g")
+}
+g.default <- function(x) c(x = x, y = y)
+
+x <- 1
+y <- 1
+g(x)
+```
+
+```
+##  x  y 
+##  1 10
+```
+
+```r
+#>  x  y 
+#>  1 10
+```
+
+From help on `UseMethod` "Any local variables defined before the call to UseMethod are retained "
+
+#### 6. What are the arguments to [? Why is this a hard question to answer?
+
+
+```r
+`[`
+```
+
+```
+## .Primitive("[")
+```
+
+
+## 13.5 Object Styles
+
 

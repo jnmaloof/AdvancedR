@@ -418,3 +418,137 @@ attributes(three)
 str(three)
 ```
 
+## 13.4 Generics and Methods
+
+### 13.4.1 Method Dispatch
+
+Generics use `UseMethod()` to dispatch to the correct method.
+
+We can see what is being chosen using `sloop::s3_dispatch()`
+
+```{r}
+x <- Sys.Date()
+s3_dispatch(print(x))
+```
+
+
+
+### 13.4.2 Finding methods
+
+Use `sloop::s3_methods_generic` (for a method) or `sloop::s3_methods_class()` for a class
+
+```{r}
+s3_methods_generic("mean")
+
+s3_methods_class("ordered")
+
+
+```
+
+### 13.4.3 Creating Methods
+
+Only write a method if you own the generic or the class
+
+A method must have the same arguments as its generic.
+
+### 13.4.4 Exercises
+
+#### 1. Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it? Why?
+
+```{r}
+?t
+?t.test
+
+s3_dispatch(t.test(rnorm(10)))
+
+result <- t.test(rnorm(10))
+
+print("t.test result")
+result
+
+print("str of t.test result")
+str(result)
+
+print("t(result)")
+t(result)
+
+print("str(t(result))")
+str(t(result))
+
+print("s3_dispatch(t(result))")
+s3_dispatch(t(result))
+```
+
+```{r}
+t_result <- t(result)
+print(t_result)
+
+s3_dispatch(print(t_result))
+
+unclass(t_result)
+```
+
+So `t()` does its thing but keeps the class as "htest" so `print` uses the htest method and messes it up.
+
+```{r}
+x <- structure(1:10, class = "test")
+x
+t(x)
+```
+
+#### 2. What generics does the table class have methods for?
+
+```{r}
+s3_methods_class("table")
+```
+
+
+#### 3. What generics does the ecdf class have methods for?
+
+```{r}
+s3_methods_class("ecdf")
+```
+
+
+#### 4. Which base generic has the greatest number of defined methods?
+
+```{r}
+fxns <- tibble(fn_name=ls("package:base")) %>%
+    filter(map_lgl(fn_name, ~ {get(.) %>% is_function()})) %>%
+  filter(map_lgl(fn_name, is_s3_generic)) %>%
+  mutate(methods=map(fn_name, s3_methods_generic)) %>%
+  mutate(n.methods=map_int(methods, nrow)) %>%
+  arrange(desc(n.methods))
+
+fxns
+```
+
+#### 5. Carefully read the documentation for UseMethod() and explain why the following code returns the results that it does. What two usual rules of function evaluation does UseMethod() violate?
+
+```{r}
+g <- function(x) {
+  x <- 10
+  y <- 10
+  UseMethod("g")
+}
+g.default <- function(x) c(x = x, y = y)
+
+x <- 1
+y <- 1
+g(x)
+#>  x  y 
+#>  1 10
+```
+
+From help on `UseMethod` "Any local variables defined before the call to UseMethod are retained "
+
+#### 6. What are the arguments to [? Why is this a hard question to answer?
+
+```{r}
+`[`
+```
+
+
+## 13.5 Object Styles
+
+
