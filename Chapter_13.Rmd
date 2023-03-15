@@ -542,10 +542,25 @@ g(x)
 
 From help on `UseMethod` "Any local variables defined before the call to UseMethod are retained "
 
+```{r}
+g <- function(x) {
+  x <- 10
+  y <- 10
+  g2(x)
+}
+g2 <- function(x) c(x = x, y = y)
+
+x <- 1
+y <- 1
+g(x)
+
+```
+
 #### 6. What are the arguments to [? Why is this a hard question to answer?
 
 ```{r}
 `[`
+formals(`[`)
 ```
 
 

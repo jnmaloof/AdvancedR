@@ -117,7 +117,7 @@ s3_get_method(weighted.mean.Date)
 ```
 ## function (x, w, ...) 
 ## .Date(weighted.mean(unclass(x), w, ...))
-## <bytecode: 0x12b083e40>
+## <bytecode: 0x10ffd9cc0>
 ## <environment: namespace:stats>
 ```
 
@@ -349,7 +349,7 @@ as.data.frame.data.frame
 ##     }
 ##     x
 ## }
-## <bytecode: 0x12b41bfc8>
+## <bytecode: 0x118366668>
 ## <environment: namespace:base>
 ```
 `as.data.frame.data.frame` removes any class info that preceeds the data.frame class.  It also does some checking to make sure that the number of rownames matches the number of rows and throws an error if it is incorrect.  
@@ -1298,6 +1298,25 @@ g(x)
 
 From help on `UseMethod` "Any local variables defined before the call to UseMethod are retained "
 
+
+```r
+g <- function(x) {
+  x <- 10
+  y <- 10
+  g2(x)
+}
+g2 <- function(x) c(x = x, y = y)
+
+x <- 1
+y <- 1
+g(x)
+```
+
+```
+##  x  y 
+## 10  1
+```
+
 #### 6. What are the arguments to [? Why is this a hard question to answer?
 
 
@@ -1307,6 +1326,14 @@ From help on `UseMethod` "Any local variables defined before the call to UseMeth
 
 ```
 ## .Primitive("[")
+```
+
+```r
+formals(`[`)
+```
+
+```
+## NULL
 ```
 
 

@@ -407,7 +407,7 @@ dispatch</strong></p>
 <pre class="r"><code>s3_get_method(weighted.mean.Date)</code></pre>
 <pre><code>## function (x, w, ...) 
 ## .Date(weighted.mean(unclass(x), w, ...))
-## &lt;bytecode: 0x12b083e40&gt;
+## &lt;bytecode: 0x10ffd9cc0&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <pre class="r"><code>s3_methods_generic(&quot;print&quot;)</code></pre>
 <pre><code>## # A tibble: 306 × 4
@@ -598,7 +598,7 @@ confusing? How could you avoid this confusion in your own code?</h4>
 ##     }
 ##     x
 ## }
-## &lt;bytecode: 0x12b41bfc8&gt;
+## &lt;bytecode: 0x118366668&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <p><code>as.data.frame.data.frame</code> removes any class info that
 preceeds the data.frame class. It also does some checking to make sure
@@ -1233,12 +1233,26 @@ g(x)</code></pre>
 #&gt;  1 10</code></pre>
 <p>From help on <code>UseMethod</code> “Any local variables defined
 before the call to UseMethod are retained”</p>
+<pre class="r"><code>g &lt;- function(x) {
+  x &lt;- 10
+  y &lt;- 10
+  g2(x)
+}
+g2 &lt;- function(x) c(x = x, y = y)
+
+x &lt;- 1
+y &lt;- 1
+g(x)</code></pre>
+<pre><code>##  x  y 
+## 10  1</code></pre>
 </div>
 <div id="what-are-the-arguments-to-why-is-this-a-hard-question-to-answer" class="section level4">
 <h4>6. What are the arguments to [? Why is this a hard question to
 answer?</h4>
 <pre class="r"><code>`[`</code></pre>
 <pre><code>## .Primitive(&quot;[&quot;)</code></pre>
+<pre class="r"><code>formals(`[`)</code></pre>
+<pre><code>## NULL</code></pre>
 </div>
 </div>
 </div>
