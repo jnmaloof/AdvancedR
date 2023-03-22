@@ -548,14 +548,32 @@ g <- function(x) {
   y <- 10
   g2(x)
 }
-g2 <- function(x) c(x = x, y = y)
-
+g2 <- function(x) {
+  c(x = x, y = y)
+}
 x <- 1
 y <- 1
 g(x)
 
 ```
 
+```{r}
+g <- function(x) {
+  
+  g2 <- function(x) {
+  c(x = x, y = y)
+  }
+  
+  #x <- 10
+  y <- 10
+  g2(x)
+}
+
+x <- 1
+y <- 1
+g(x)
+
+```
 #### 6. What are the arguments to [? Why is this a hard question to answer?
 
 ```{r}
@@ -566,4 +584,187 @@ formals(`[`)
 
 ## 13.5 Object Styles
 
+## 13.6 Inheritance
 
+* The class can be a character _vector_
+* If a method is not found for the first class in the vector, R move on to the second class, etc.
+* A method can delegate by calling `NextMethod()`.  Note that this is indicted by "->" in the output from `s3_dispatch()`
+
+A __subclass__ is a class listed before another one, a __superclass__ is listed after another one.
+
+Some suggestions from Had:
+
+* The base type of the subclass should be the same as the superclass
+* The attributes of the subclass should be a superset of the attributes of the superclass
+
+### 13.6.1
+
+```{r}
+new_secret <- function(x = double()) {
+  stopifnot(is.double(x))
+  structure(x, class = "secret")
+}
+
+print.secret <- function(x, ...) {
+  print(strrep("x", nchar(x)))
+  invisible(x)
+}
+
+x <- new_secret(c(15, 1, 456))
+x
+```
+
+But class is not preserved if we subset
+
+```{r}
+s3_dispatch(x[1])
+
+x[1]
+
+```
+
+Instead use `NextMEthod` but reclassify the result
+
+```{r}
+`[.secret` <- function(x, i) {
+  new_secret(NextMethod())
+}
+x[1]
+
+```
+
+```{r}
+s3_dispatch(x[1])
+
+```
+
+### 13.6.2 Allowing sublassing
+
+The constructor neews to hace ... and class arguments
+
+```{r}
+new_secret <- function(x, ..., class = character()) {
+  stopifnot(is.double(x))
+
+  structure(
+    x,
+    ...,
+    class = c(class, "secret")
+  )
+}
+```
+
+So that we can
+
+```{r}
+new_supersecret <- function(x) {
+  new_secret(x, class = "supersecret")
+}
+
+print.supersecret <- function(x, ...) {
+  print(rep("xxxxx", length(x)))
+  invisible(x)
+}
+
+x2 <- new_supersecret(c(15, 1, 456))
+x2
+#> [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+The methods have to be modified to maintain the subclass as well
+
+solve this using vec_restore().  Had says can;t do with base R but I do not understand why our constructor can't just take a character vector of clases and then we grab that in our method.  Anyay
+
+
+```{r}
+vec_restore.secret <- function(x, to, ...) new_secret(x)
+vec_restore.supersecret <- function(x, to, ...) new_supersecret(x)
+```
+
+```{r}
+`[.secret` <- function(x, ...) {
+  vctrs::vec_restore(NextMethod(), x)
+}
+x2[1:3]
+#> [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+why not
+```{r}
+`[.secret` <- function(x, ...) {
+  clx <- class(x)
+  new_secret(NextMethod(), class=clx[-length(clx)])
+}
+x2[1:3]
+class(x2[1])
+```
+
+### 13.6.3
+
+#### 1. How does [.Date support subclasses? How does it fail to support subclasses?
+
+```{r}
+`[.Date`
+
+```
+Not sure what is wrong here, seems like it would preserve the class
+
+#### 2 R has two classes for representing date time data, POSIXct and POSIXlt, which both inherit from POSIXt. Which generics have different behaviours for the two classes? Which generics share the same behaviour?
+
+```{r}
+s3_methods_class("POSIXct")
+```
+```{r}
+s3_methods_class("POSIXlt")
+```
+
+Not sure how to do this
+
+#### 3
+
+I expect the code to return "a2" because the method dispatch is going to work on the class of the object given to the function
+
+```{r}
+generic2 <- function(x) UseMethod("generic2")
+generic2.a1 <- function(x) "a1"
+generic2.a2 <- function(x) "a2"
+generic2.b <- function(x) {
+  class(x) <- "a1"
+  NextMethod()
+}
+
+generic2(structure(list(), class = c("b", "a2")))
+```
+
+## 13.7 Dispatch details
+
+### 13.7.5 Exercises
+
+#### 1. Explain the differences in dispatch below:
+
+
+
+`length` is an internal generic, and "internal generics do not dispatch to methods unless the class attribute has been set, which means that internal generics do not use the implicit class. "
+
+The first example uses the internal because no class has been set, whereas in the second example a class has been explicitly set. 
+
+#### 2. What classes have a method for the Math group generic in base R? Read the source code. How do the methods work?
+
+```{r}
+s3_methods_generic("Math")
+```
+
+```{r}
+Math.data.frame
+Math.Date
+```
+
+These either return an error message that includes the name of the generic called, or applys the generic
+
+#### 3 Math.difftime() is more complicated than I described. Why?
+
+```{r}
+Math.difftime
+```
+
+This code allows the Generic to be called if appropriate or an error message to be returned if not appropriate.

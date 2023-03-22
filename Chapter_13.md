@@ -117,7 +117,7 @@ s3_get_method(weighted.mean.Date)
 ```
 ## function (x, w, ...) 
 ## .Date(weighted.mean(unclass(x), w, ...))
-## <bytecode: 0x10ffd9cc0>
+## <bytecode: 0x10fb01430>
 ## <environment: namespace:stats>
 ```
 
@@ -349,7 +349,7 @@ as.data.frame.data.frame
 ##     }
 ##     x
 ## }
-## <bytecode: 0x118366668>
+## <bytecode: 0x10fed66d8>
 ## <environment: namespace:base>
 ```
 `as.data.frame.data.frame` removes any class info that preceeds the data.frame class.  It also does some checking to make sure that the number of rownames matches the number of rows and throws an error if it is incorrect.  
@@ -1305,8 +1305,9 @@ g <- function(x) {
   y <- 10
   g2(x)
 }
-g2 <- function(x) c(x = x, y = y)
-
+g2 <- function(x) {
+  c(x = x, y = y)
+}
 x <- 1
 y <- 1
 g(x)
@@ -1317,6 +1318,28 @@ g(x)
 ## 10  1
 ```
 
+
+```r
+g <- function(x) {
+  
+  g2 <- function(x) {
+  c(x = x, y = y)
+  }
+  
+  #x <- 10
+  y <- 10
+  g2(x)
+}
+
+x <- 1
+y <- 1
+g(x)
+```
+
+```
+##  x  y 
+##  1 10
+```
 #### 6. What are the arguments to [? Why is this a hard question to answer?
 
 
@@ -1339,4 +1362,366 @@ formals(`[`)
 
 ## 13.5 Object Styles
 
+## 13.6 Inheritance
 
+* The class can be a character _vector_
+* If a method is not found for the first class in the vector, R move on to the second class, etc.
+* A method can delegate by calling `NextMethod()`.  Note that this is indicted by "->" in the output from `s3_dispatch()`
+
+A __subclass__ is a class listed before another one, a __superclass__ is listed after another one.
+
+Some suggestions from Had:
+
+* The base type of the subclass should be the same as the superclass
+* The attributes of the subclass should be a superset of the attributes of the superclass
+
+### 13.6.1
+
+
+```r
+new_secret <- function(x = double()) {
+  stopifnot(is.double(x))
+  structure(x, class = "secret")
+}
+
+print.secret <- function(x, ...) {
+  print(strrep("x", nchar(x)))
+  invisible(x)
+}
+
+x <- new_secret(c(15, 1, 456))
+x
+```
+
+```
+## [1] "xx"  "x"   "xxx"
+```
+
+But class is not preserved if we subset
+
+
+```r
+s3_dispatch(x[1])
+```
+
+```
+##    [.secret
+##    [.default
+## => [ (internal)
+```
+
+```r
+x[1]
+```
+
+```
+## [1] 15
+```
+
+Instead use `NextMEthod` but reclassify the result
+
+
+```r
+`[.secret` <- function(x, i) {
+  new_secret(NextMethod())
+}
+x[1]
+```
+
+```
+## [1] "xx"
+```
+
+
+```r
+s3_dispatch(x[1])
+```
+
+```
+## => [.secret
+##    [.default
+## -> [ (internal)
+```
+
+### 13.6.2 Allowing sublassing
+
+The constructor neews to hace ... and class arguments
+
+
+```r
+new_secret <- function(x, ..., class = character()) {
+  stopifnot(is.double(x))
+
+  structure(
+    x,
+    ...,
+    class = c(class, "secret")
+  )
+}
+```
+
+So that we can
+
+
+```r
+new_supersecret <- function(x) {
+  new_secret(x, class = "supersecret")
+}
+
+print.supersecret <- function(x, ...) {
+  print(rep("xxxxx", length(x)))
+  invisible(x)
+}
+
+x2 <- new_supersecret(c(15, 1, 456))
+x2
+```
+
+```
+## [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+```r
+#> [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+The methods have to be modified to maintain the subclass as well
+
+solve this using vec_restore().  Had says can;t do with base R but I do not understand why our constructor can't just take a character vector of clases and then we grab that in our method.  Anyay
+
+
+
+```r
+vec_restore.secret <- function(x, to, ...) new_secret(x)
+vec_restore.supersecret <- function(x, to, ...) new_supersecret(x)
+```
+
+
+```r
+`[.secret` <- function(x, ...) {
+  vctrs::vec_restore(NextMethod(), x)
+}
+x2[1:3]
+```
+
+```
+## [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+```r
+#> [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+why not
+
+```r
+`[.secret` <- function(x, ...) {
+  clx <- class(x)
+  new_secret(NextMethod(), class=clx[-length(clx)])
+}
+x2[1:3]
+```
+
+```
+## [1] "xxxxx" "xxxxx" "xxxxx"
+```
+
+```r
+class(x2[1])
+```
+
+```
+## [1] "supersecret" "secret"
+```
+
+### 13.6.3
+
+#### 1. How does [.Date support subclasses? How does it fail to support subclasses?
+
+
+```r
+`[.Date`
+```
+
+```
+## function (x, ..., drop = TRUE) 
+## {
+##     .Date(NextMethod("["), oldClass(x))
+## }
+## <bytecode: 0x10815f540>
+## <environment: namespace:base>
+```
+Not sure what is wrong here, seems like it would preserve the class
+
+#### 2 R has two classes for representing date time data, POSIXct and POSIXlt, which both inherit from POSIXt. Which generics have different behaviours for the two classes? Which generics share the same behaviour?
+
+
+```r
+s3_methods_class("POSIXct")
+```
+
+```
+## # A tibble: 20 × 4
+##    generic       class   visible source             
+##    <chr>         <chr>   <lgl>   <chr>              
+##  1 [             POSIXct TRUE    base               
+##  2 [[            POSIXct TRUE    base               
+##  3 [<-           POSIXct TRUE    base               
+##  4 as.data.frame POSIXct TRUE    base               
+##  5 as.Date       POSIXct TRUE    base               
+##  6 as.list       POSIXct TRUE    base               
+##  7 as.POSIXlt    POSIXct TRUE    base               
+##  8 c             POSIXct TRUE    base               
+##  9 format        POSIXct TRUE    base               
+## 10 full_seq      POSIXct FALSE   registered S3method
+## 11 length<-      POSIXct TRUE    base               
+## 12 mean          POSIXct TRUE    base               
+## 13 print         POSIXct TRUE    base               
+## 14 reclass_date  POSIXct FALSE   registered S3method
+## 15 rep           POSIXct TRUE    base               
+## 16 split         POSIXct TRUE    base               
+## 17 summary       POSIXct TRUE    base               
+## 18 Summary       POSIXct TRUE    base               
+## 19 weighted.mean POSIXct FALSE   registered S3method
+## 20 xtfrm         POSIXct TRUE    base
+```
+
+```r
+s3_methods_class("POSIXlt")
+```
+
+```
+## # A tibble: 30 × 4
+##    generic       class   visible source
+##    <chr>         <chr>   <lgl>   <chr> 
+##  1 [             POSIXlt TRUE    base  
+##  2 [[            POSIXlt TRUE    base  
+##  3 [[<-          POSIXlt TRUE    base  
+##  4 [<-           POSIXlt TRUE    base  
+##  5 anyNA         POSIXlt TRUE    base  
+##  6 as.data.frame POSIXlt TRUE    base  
+##  7 as.Date       POSIXlt TRUE    base  
+##  8 as.double     POSIXlt TRUE    base  
+##  9 as.list       POSIXlt TRUE    base  
+## 10 as.matrix     POSIXlt TRUE    base  
+## # … with 20 more rows
+```
+
+Not sure how to do this
+
+#### 3
+
+I expect the code to return "a2" because the method dispatch is going to work on the class of the object given to the function
+
+
+```r
+generic2 <- function(x) UseMethod("generic2")
+generic2.a1 <- function(x) "a1"
+generic2.a2 <- function(x) "a2"
+generic2.b <- function(x) {
+  class(x) <- "a1"
+  NextMethod()
+}
+
+generic2(structure(list(), class = c("b", "a2")))
+```
+
+```
+## [1] "a2"
+```
+
+## 13.7 Dispatch details
+
+### 13.7.5 Exercises
+
+#### 1. Explain the differences in dispatch below:
+
+
+
+`length` is an internal generic, and "internal generics do not dispatch to methods unless the class attribute has been set, which means that internal generics do not use the implicit class. "
+
+The first example uses the internal because no class has been set, whereas in the second example a class has been explicitly set. 
+
+#### 2. What classes have a method for the Math group generic in base R? Read the source code. How do the methods work?
+
+
+```r
+s3_methods_generic("Math")
+```
+
+```
+## # A tibble: 8 × 4
+##   generic class      visible source             
+##   <chr>   <chr>      <lgl>   <chr>              
+## 1 Math    data.frame TRUE    base               
+## 2 Math    Date       TRUE    base               
+## 3 Math    difftime   TRUE    base               
+## 4 Math    factor     TRUE    base               
+## 5 Math    POSIXt     TRUE    base               
+## 6 Math    quosure    FALSE   registered S3method
+## 7 Math    vctrs_sclr FALSE   registered S3method
+## 8 Math    vctrs_vctr FALSE   registered S3method
+```
+
+
+```r
+Math.data.frame
+```
+
+```
+## function (x, ...) 
+## {
+##     mode.ok <- vapply(x, function(x) is.numeric(x) || is.logical(x) || 
+##         is.complex(x), NA)
+##     if (all(mode.ok)) {
+##         x[] <- lapply(X = x, FUN = .Generic, ...)
+##         return(x)
+##     }
+##     else {
+##         vnames <- names(x)
+##         if (is.null(vnames)) 
+##             vnames <- seq_along(x)
+##         stop("non-numeric-alike variable(s) in data frame: ", 
+##             paste(vnames[!mode.ok], collapse = ", "))
+##     }
+## }
+## <bytecode: 0x107d1f598>
+## <environment: namespace:base>
+```
+
+```r
+Math.Date
+```
+
+```
+## function (x, ...) 
+## stop(gettextf("%s not defined for \"Date\" objects", .Generic), 
+##     domain = NA)
+## <bytecode: 0x107d3ca20>
+## <environment: namespace:base>
+```
+
+These either return an error message that includes the name of the generic called, or applys the generic
+
+#### 3 Math.difftime() is more complicated than I described. Why?
+
+
+```r
+Math.difftime
+```
+
+```
+## function (x, ...) 
+## {
+##     switch(.Generic, abs = , sign = , floor = , ceiling = , trunc = , 
+##         round = , signif = {
+##             units <- attr(x, "units")
+##             .difftime(NextMethod(), units)
+##         }, stop(gettextf("'%s' not defined for \"difftime\" objects", 
+##             .Generic), domain = NA))
+## }
+## <bytecode: 0x107d3f158>
+## <environment: namespace:base>
+```
+
+This code allows the Generic to be called if appropriate or an error message to be returned if not appropriate.
