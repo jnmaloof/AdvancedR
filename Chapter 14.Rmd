@@ -1,0 +1,218 @@
+---
+title: "Chapter 14"
+author: "Julin Maloof"
+date: "2023-04-07"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+R6
+
+__"in most cases R6 will lead you to non-idiomatic R code."__
+
+```{r}
+library(R6)
+```
+
+Use the `R6Class()` function to define a class.  Assign it to an object that has the same name as the class.  First argument is class name, second argument is public fields and methods.
+
+```{r}
+Accumulator <- R6Class("Accumulator", list(
+  sum = 0,
+  add = function(x = 1) {
+    self$sum <- self$sum + x 
+    invisible(self)
+  })
+)
+```
+
+```{r}
+Accumulator
+```
+
+Create a new object of this clas with $new function
+
+```{r}
+x <- Accumulator$new()
+```
+
+```{r}
+x$sum
+x$add(4)
+x$sum
+```
+
+## 14.2.1 Method Chaining
+ 
+side-effect R6 methods (those that update a field and are not called to create an output) should return self invisibly
+
+then you can do things like this
+```{r}
+x$
+  add(10)$
+  add(10)$
+  sum
+```
+
+## 14.2.2 Important methods
+
+Generally should define $initialize and $print methods to override the defaults
+
+```{r}
+Person <- R6Class("Person", list(
+  name = NULL,
+  age = NA,
+  initialize = function(name, age = NA) {
+    self$name <- name
+    self$age <- age
+  },
+  print = function(...) {
+    cat("Person: \n")
+    cat("  Name: ", self$name, "\n", sep = "")
+    cat("  Age:  ", self$age, "\n", sep = "")
+    invisible(self)
+  }
+))
+
+hadley2 <- Person$new("Hadley")
+hadley2
+```
+
+## 14.2.3 Adding methods after creation
+
+Use $set
+
+```{r}
+Accumulator <- R6Class("Accumulator")
+Accumulator$set("public", "sum", 0)
+Accumulator$set("public", "add", function(x = 1) {
+  self$sum <- self$sum + x 
+  invisible(self)
+})
+```
+
+Will only impact newly created objects, will not be added to previosly created objects of the same class.
+
+## 14.2.5 Inheritance
+
+```{r}
+AccumulatorChatty <- R6Class("AccumulatorChatty", 
+  inherit = Accumulator,
+  public = list(
+    add = function(x = 1) {
+      cat("Adding ", x, "\n", sep = "")
+      super$add(x = x)
+    }
+  )
+)
+
+x2 <- AccumulatorChatty$new()
+x2$add(10)$add(1)$sum
+```
+
+## 14.2.5 Introspections
+
+Every R6 object has an S3 class hierarchy
+```{r}
+class(hadley2)
+```
+
+## 14.2.6. Exercises
+
+### 1 Create a bank account R6 class that stores a balance and allows you to deposit and withdraw money. Create a subclass that throws an error if you attempt to go into overdraft. Create another subclass that allows you to go into overdraft, but charges you a fee.
+
+```{r}
+BankAccountBasic <- R6Class("BankAcountSimple", list(
+  balance = 0,
+  deposit = function(amt) {
+    self$balance <- self$balance + amt
+    invisible(self)
+  },
+  withdraw = function(amt) {
+    self$balance <- self$balance - amt
+    invisible(self)
+  },
+  print = function() {
+    cat("The current balance is: ", self$balance, "\n")
+    invisible(self)
+  }
+))
+
+BA1 <- BankAccountBasic$new()
+
+BA1$deposit(100)
+BA1$withdraw(33)
+BA1
+```
+
+```{r, error=TRUE}
+BankAccount2 <- R6Class("BankAcount2",
+                       inherit = BankAccountBasic,
+                       public = list(
+                         withdraw=function(amt) {
+                           stopifnot(self$balance-amt>=0)
+                           super$withdraw(amt)
+                         }
+                       ))
+
+BA2 <- BankAccount2$new()
+
+BA2$deposit(100)
+BA2$withdraw(33)
+BA2
+BA2$withdraw(100)
+BA2
+```
+```{r, error=TRUE}
+BankAccount3 <- R6Class("BankAcount3",
+                       inherit = BankAccountBasic,
+                       public = list(
+                         withdraw=function(amt) {
+                           super$withdraw(amt)
+                           if (self$balance < 0) {
+                             warning("New balance is less than $0, a $5.00 fee is being assessed\n")
+                             super$withdraw(5)
+                           }
+                         }
+                       ))
+
+BA3 <- BankAccount3$new()
+
+BA3$deposit(100)
+BA3$withdraw(150)
+BA3
+```
+
+### 2. Create an R6 class that represents a shuffled deck of cards. You should be able to draw cards from the deck with $draw(n), and return all cards to the deck and reshuffle with $reshuffle(). Use the following code to make a vector of cards.
+
+```{r}
+deck <- R6Class("deck", public = list(
+  cards=character(),
+  initialize = function() {
+    suit <- c("♠", "♥", "♦", "♣")
+    value <- c("A", 2:10, "J", "Q", "K")
+    self$cards <- sample(paste0(rep(value, 4), suit))
+  },
+  reshuffle = function() {
+    self$cards <- sample(self$cards)
+  },
+  print = function() {
+    cat(self$cards, "\n")
+  }
+))
+
+mydeck <- deck$new()
+mydeck
+mydeck$reshuffle()
+mydeck
+
+```
+### 3. Why can’t you model a bank account or a deck of cards with an S3 class?
+
+Beacuse S3 is not modify in place
+
