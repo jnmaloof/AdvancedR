@@ -283,17 +283,28 @@ BA3
 
 ```r
 deck <- R6Class("deck", public = list(
-  cards=character(),
+  stack=character(),
+  drawn=character(),
   initialize = function() {
     suit <- c("♠", "♥", "♦", "♣")
     value <- c("A", 2:10, "J", "Q", "K")
-    self$cards <- sample(paste0(rep(value, 4), suit))
+    self$stack <- sample(paste0(rep(value, 4), suit))
+    self$drawn <- character()
   },
   reshuffle = function() {
-    self$cards <- sample(self$cards)
+    self$stack <- c(self$stack, self$drawn)
+    self$drawn <- character()
+    self$stack <- sample(self$stack)
+  },
+  draw = function(n) {
+    newdraw <- self$stack[1:n]
+    self$drawn <- c(self$drawn, newdraw)
+    self$stack <- self$stack[-1:-n]
+    cat(newdraw)
   },
   print = function() {
-    cat(self$cards, "\n")
+    cat("Not Drawn: ",self$stack, "\n")
+    cat("Drawn: ", self$drawn, "\n")
   }
 ))
 
@@ -302,7 +313,42 @@ mydeck
 ```
 
 ```
-## 7♦ Q♦ 3♦ 6♣ Q♥ 6♦ 3♣ 9♥ A♣ 3♠ 2♦ 2♥ 10♦ 2♠ 9♦ J♥ 8♦ 9♣ 4♠ A♦ K♦ 3♥ 5♥ 10♥ K♥ 8♥ J♣ 7♠ 5♣ 5♠ 7♣ 10♣ A♠ Q♠ 5♦ 8♠ 7♥ 6♥ 6♠ 10♠ 8♣ 2♣ 9♠ A♥ 4♦ 4♥ J♠ K♠ J♦ Q♣ K♣ 4♣
+## Not Drawn:  A♥ 3♠ 10♣ 8♦ 2♣ 2♠ J♥ 6♣ 6♠ 9♦ 8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:
+```
+
+```r
+mydeck$draw(5)
+```
+
+```
+## A♥ 3♠ 10♣ 8♦ 2♣
+```
+
+```r
+mydeck
+```
+
+```
+## Not Drawn:  2♠ J♥ 6♣ 6♠ 9♦ 8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:  A♥ 3♠ 10♣ 8♦ 2♣
+```
+
+```r
+mydeck$draw(5)
+```
+
+```
+## 2♠ J♥ 6♣ 6♠ 9♦
+```
+
+```r
+mydeck
+```
+
+```
+## Not Drawn:  8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:  A♥ 3♠ 10♣ 8♦ 2♣ 2♠ J♥ 6♣ 6♠ 9♦
 ```
 
 ```r
@@ -311,7 +357,8 @@ mydeck
 ```
 
 ```
-## 9♣ 7♥ 2♥ 10♣ 4♦ K♥ 5♦ Q♥ 2♦ 6♥ Q♠ Q♣ 4♠ 10♠ J♥ 6♦ 7♠ 9♠ K♠ 4♥ 6♠ 10♥ 5♣ 9♦ 6♣ 7♣ 2♠ A♦ A♥ J♦ Q♦ 5♠ J♣ 2♣ 8♦ 10♦ A♠ 8♣ K♦ A♣ 8♥ 4♣ 7♦ 3♦ 3♥ 3♣ 8♠ 5♥ K♣ 9♥ 3♠ J♠
+## Not Drawn:  4♦ A♥ 8♣ 10♥ 8♥ 10♠ J♦ K♣ 5♥ J♠ 8♦ 7♠ 7♦ J♣ K♦ 9♦ Q♠ 8♠ 9♥ 9♠ K♥ 5♠ A♠ 3♠ 4♥ 5♦ A♣ 10♣ 6♠ K♠ 2♥ Q♦ A♦ 7♣ 2♦ 10♦ 3♦ 7♥ 2♣ Q♥ 3♥ 5♣ 2♠ 3♣ 6♦ J♥ 9♣ 4♠ 4♣ 6♣ 6♥ Q♣ 
+## Drawn:
 ```
 ### 3. Why can’t you model a bank account or a deck of cards with an S3 class?
 

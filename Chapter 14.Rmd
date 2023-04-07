@@ -192,22 +192,40 @@ BA3
 
 ```{r}
 deck <- R6Class("deck", public = list(
-  cards=character(),
+  stack=character(),
+  drawn=character(),
   initialize = function() {
     suit <- c("♠", "♥", "♦", "♣")
     value <- c("A", 2:10, "J", "Q", "K")
-    self$cards <- sample(paste0(rep(value, 4), suit))
+    self$stack <- sample(paste0(rep(value, 4), suit))
+    self$drawn <- character()
   },
   reshuffle = function() {
-    self$cards <- sample(self$cards)
+    self$stack <- c(self$stack, self$drawn)
+    self$drawn <- character()
+    self$stack <- sample(self$stack)
+  },
+  draw = function(n) {
+    newdraw <- self$stack[1:n]
+    self$drawn <- c(self$drawn, newdraw)
+    self$stack <- self$stack[-1:-n]
+    cat(newdraw)
   },
   print = function() {
-    cat(self$cards, "\n")
+    cat("Not Drawn: ",self$stack, "\n")
+    cat("Drawn: ", self$drawn, "\n")
   }
 ))
 
 mydeck <- deck$new()
 mydeck
+
+mydeck$draw(5)
+mydeck
+
+mydeck$draw(5)
+mydeck
+
 mydeck$reshuffle()
 mydeck
 

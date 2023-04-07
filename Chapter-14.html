@@ -534,26 +534,49 @@ should be able to draw cards from the deck with $draw(n), and return all
 cards to the deck and reshuffle with $reshuffle(). Use the following
 code to make a vector of cards.</h3>
 <pre class="r"><code>deck &lt;- R6Class(&quot;deck&quot;, public = list(
-  cards=character(),
+  stack=character(),
+  drawn=character(),
   initialize = function() {
     suit &lt;- c(&quot;♠&quot;, &quot;♥&quot;, &quot;♦&quot;, &quot;♣&quot;)
     value &lt;- c(&quot;A&quot;, 2:10, &quot;J&quot;, &quot;Q&quot;, &quot;K&quot;)
-    self$cards &lt;- sample(paste0(rep(value, 4), suit))
+    self$stack &lt;- sample(paste0(rep(value, 4), suit))
+    self$drawn &lt;- character()
   },
   reshuffle = function() {
-    self$cards &lt;- sample(self$cards)
+    self$stack &lt;- c(self$stack, self$drawn)
+    self$drawn &lt;- character()
+    self$stack &lt;- sample(self$stack)
+  },
+  draw = function(n) {
+    newdraw &lt;- self$stack[1:n]
+    self$drawn &lt;- c(self$drawn, newdraw)
+    self$stack &lt;- self$stack[-1:-n]
+    cat(newdraw)
   },
   print = function() {
-    cat(self$cards, &quot;\n&quot;)
+    cat(&quot;Not Drawn: &quot;,self$stack, &quot;\n&quot;)
+    cat(&quot;Drawn: &quot;, self$drawn, &quot;\n&quot;)
   }
 ))
 
 mydeck &lt;- deck$new()
 mydeck</code></pre>
-<pre><code>## 7♦ Q♦ 3♦ 6♣ Q♥ 6♦ 3♣ 9♥ A♣ 3♠ 2♦ 2♥ 10♦ 2♠ 9♦ J♥ 8♦ 9♣ 4♠ A♦ K♦ 3♥ 5♥ 10♥ K♥ 8♥ J♣ 7♠ 5♣ 5♠ 7♣ 10♣ A♠ Q♠ 5♦ 8♠ 7♥ 6♥ 6♠ 10♠ 8♣ 2♣ 9♠ A♥ 4♦ 4♥ J♠ K♠ J♦ Q♣ K♣ 4♣</code></pre>
+<pre><code>## Not Drawn:  A♥ 3♠ 10♣ 8♦ 2♣ 2♠ J♥ 6♣ 6♠ 9♦ 8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:</code></pre>
+<pre class="r"><code>mydeck$draw(5)</code></pre>
+<pre><code>## A♥ 3♠ 10♣ 8♦ 2♣</code></pre>
+<pre class="r"><code>mydeck</code></pre>
+<pre><code>## Not Drawn:  2♠ J♥ 6♣ 6♠ 9♦ 8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:  A♥ 3♠ 10♣ 8♦ 2♣</code></pre>
+<pre class="r"><code>mydeck$draw(5)</code></pre>
+<pre><code>## 2♠ J♥ 6♣ 6♠ 9♦</code></pre>
+<pre class="r"><code>mydeck</code></pre>
+<pre><code>## Not Drawn:  8♥ 3♣ 10♦ 7♠ 4♦ 3♥ 2♦ Q♥ K♥ 4♣ 8♠ 9♥ 2♥ A♠ 5♣ 7♥ 7♦ J♣ 10♠ Q♠ K♦ 7♣ 9♣ 8♣ 4♥ Q♦ K♣ J♦ J♠ 5♦ 9♠ 6♥ 6♦ Q♣ K♠ 4♠ A♣ A♦ 10♥ 5♥ 3♦ 5♠ 
+## Drawn:  A♥ 3♠ 10♣ 8♦ 2♣ 2♠ J♥ 6♣ 6♠ 9♦</code></pre>
 <pre class="r"><code>mydeck$reshuffle()
 mydeck</code></pre>
-<pre><code>## 9♣ 7♥ 2♥ 10♣ 4♦ K♥ 5♦ Q♥ 2♦ 6♥ Q♠ Q♣ 4♠ 10♠ J♥ 6♦ 7♠ 9♠ K♠ 4♥ 6♠ 10♥ 5♣ 9♦ 6♣ 7♣ 2♠ A♦ A♥ J♦ Q♦ 5♠ J♣ 2♣ 8♦ 10♦ A♠ 8♣ K♦ A♣ 8♥ 4♣ 7♦ 3♦ 3♥ 3♣ 8♠ 5♥ K♣ 9♥ 3♠ J♠</code></pre>
+<pre><code>## Not Drawn:  4♦ A♥ 8♣ 10♥ 8♥ 10♠ J♦ K♣ 5♥ J♠ 8♦ 7♠ 7♦ J♣ K♦ 9♦ Q♠ 8♠ 9♥ 9♠ K♥ 5♠ A♠ 3♠ 4♥ 5♦ A♣ 10♣ 6♠ K♠ 2♥ Q♦ A♦ 7♣ 2♦ 10♦ 3♦ 7♥ 2♣ Q♥ 3♥ 5♣ 2♠ 3♣ 6♦ J♥ 9♣ 4♠ 4♣ 6♣ 6♥ Q♣ 
+## Drawn:</code></pre>
 </div>
 <div id="why-cant-you-model-a-bank-account-or-a-deck-of-cards-with-an-s3-class" class="section level3">
 <h3>3. Why can’t you model a bank account or a deck of cards with an S3
