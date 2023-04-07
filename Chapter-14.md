@@ -7,21 +7,21 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 R6
 
 __"in most cases R6 will lead you to non-idiomatic R code."__
 
-```{r}
+
+```r
 library(R6)
 ```
 
 Use the `R6Class()` function to define a class.  Assign it to an object that has the same name as the class.  First argument is class name, second argument is public fields and methods.
 
-```{r}
+
+```r
 Accumulator <- R6Class("Accumulator", list(
   sum = 0,
   add = function(x = 1) {
@@ -31,20 +31,46 @@ Accumulator <- R6Class("Accumulator", list(
 )
 ```
 
-```{r}
+
+```r
 Accumulator
+```
+
+```
+## <Accumulator> object generator
+##   Public:
+##     sum: 0
+##     add: function (x = 1) 
+##     clone: function (deep = FALSE) 
+##   Parent env: <environment: R_GlobalEnv>
+##   Locked objects: TRUE
+##   Locked class: FALSE
+##   Portable: TRUE
 ```
 
 Create a new object of this clas with $new function
 
-```{r}
+
+```r
 x <- Accumulator$new()
 ```
 
-```{r}
+
+```r
 x$sum
+```
+
+```
+## [1] 0
+```
+
+```r
 x$add(4)
 x$sum
+```
+
+```
+## [1] 4
 ```
 
 ## 14.2.1 Method Chaining
@@ -52,18 +78,24 @@ x$sum
 side-effect R6 methods (those that update a field and are not called to create an output) should return self invisibly
 
 then you can do things like this
-```{r}
+
+```r
 x$
   add(10)$
   add(10)$
   sum
 ```
 
+```
+## [1] 24
+```
+
 ## 14.2.2 Important methods
 
 Generally should define $initialize and $print methods to override the defaults
 
-```{r}
+
+```r
 Person <- R6Class("Person", list(
   name = NULL,
   age = NA,
@@ -83,11 +115,18 @@ hadley2 <- Person$new("Hadley")
 hadley2
 ```
 
+```
+## Person: 
+##   Name: Hadley
+##   Age:  NA
+```
+
 ## 14.2.3 Adding methods after creation
 
 Use $set
 
-```{r}
+
+```r
 Accumulator <- R6Class("Accumulator")
 Accumulator$set("public", "sum", 0)
 Accumulator$set("public", "add", function(x = 1) {
@@ -100,7 +139,8 @@ Will only impact newly created objects, will not be added to previosly created o
 
 ## 14.2.5 Inheritance
 
-```{r}
+
+```r
 AccumulatorChatty <- R6Class("AccumulatorChatty", 
   inherit = Accumulator,
   public = list(
@@ -115,18 +155,33 @@ x2 <- AccumulatorChatty$new()
 x2$add(10)$add(1)$sum
 ```
 
+```
+## Adding 10
+## Adding 1
+```
+
+```
+## [1] 11
+```
+
 ## 14.2.5 Introspections
 
 Every R6 object has an S3 class hierarchy
-```{r}
+
+```r
 class(hadley2)
+```
+
+```
+## [1] "Person" "R6"
 ```
 
 ## 14.2.6. Exercises
 
 ### 1 Create a bank account R6 class that stores a balance and allows you to deposit and withdraw money. Create a subclass that throws an error if you attempt to go into overdraft. Create another subclass that allows you to go into overdraft, but charges you a fee.
 
-```{r}
+
+```r
 BankAccountBasic <- R6Class("BankAcountSimple", list(
   balance = 0,
   deposit = function(amt) {
@@ -150,7 +205,12 @@ BA1$withdraw(33)
 BA1
 ```
 
-```{r, error=TRUE}
+```
+## The current balance is:  67
+```
+
+
+```r
 BankAccount2 <- R6Class("BankAcount2",
                        inherit = BankAccountBasic,
                        public = list(
@@ -165,10 +225,29 @@ BA2 <- BankAccount2$new()
 BA2$deposit(100)
 BA2$withdraw(33)
 BA2
+```
+
+```
+## The current balance is:  67
+```
+
+```r
 BA2$withdraw(100)
+```
+
+```
+## Error in BA2$withdraw(100): self$balance - amt >= 0 is not TRUE
+```
+
+```r
 BA2
 ```
-```{r, error=TRUE}
+
+```
+## The current balance is:  67
+```
+
+```r
 BankAccount3 <- R6Class("BankAcount3",
                        inherit = BankAccountBasic,
                        public = list(
@@ -185,12 +264,24 @@ BA3 <- BankAccount3$new()
 
 BA3$deposit(100)
 BA3$withdraw(150)
+```
+
+```
+## Warning in BA3$withdraw(150): New balance is less than $0, a $5.00 fee is being assessed
+```
+
+```r
 BA3
+```
+
+```
+## The current balance is:  -55
 ```
 
 ### 2. Create an R6 class that represents a shuffled deck of cards. You should be able to draw cards from the deck with $draw(n), and return all cards to the deck and reshuffle with $reshuffle(). Use the following code to make a vector of cards.
 
-```{r}
+
+```r
 deck <- R6Class("deck", public = list(
   cards=character(),
   initialize = function() {
@@ -208,9 +299,19 @@ deck <- R6Class("deck", public = list(
 
 mydeck <- deck$new()
 mydeck
+```
+
+```
+## 7♦ Q♦ 3♦ 6♣ Q♥ 6♦ 3♣ 9♥ A♣ 3♠ 2♦ 2♥ 10♦ 2♠ 9♦ J♥ 8♦ 9♣ 4♠ A♦ K♦ 3♥ 5♥ 10♥ K♥ 8♥ J♣ 7♠ 5♣ 5♠ 7♣ 10♣ A♠ Q♠ 5♦ 8♠ 7♥ 6♥ 6♠ 10♠ 8♣ 2♣ 9♠ A♥ 4♦ 4♥ J♠ K♠ J♦ Q♣ K♣ 4♣
+```
+
+```r
 mydeck$reshuffle()
 mydeck
+```
 
+```
+## 9♣ 7♥ 2♥ 10♣ 4♦ K♥ 5♦ Q♥ 2♦ 6♥ Q♠ Q♣ 4♠ 10♠ J♥ 6♦ 7♠ 9♠ K♠ 4♥ 6♠ 10♥ 5♣ 9♦ 6♣ 7♣ 2♠ A♦ A♥ J♦ Q♦ 5♠ J♣ 2♣ 8♦ 10♦ A♠ 8♣ K♦ A♣ 8♥ 4♣ 7♦ 3♦ 3♥ 3♣ 8♠ 5♥ K♣ 9♥ 3♠ J♠
 ```
 ### 3. Why can’t you model a bank account or a deck of cards with an S3 class?
 
@@ -218,7 +319,8 @@ Beacuse S3 is not modify in place
 
 ### 4. Create an R6 class that allows you to get and set the current time zone. You can access the current time zone with Sys.timezone() and set it with Sys.setenv(TZ = "newtimezone"). When setting the time zone, make sure the new time zone is in the list provided by OlsonNames().
 
-```{r, error=TRUE}
+
+```r
 TZ <- R6Class("TZ", public=list(
   tz=Sys.timezone(),
   get=function() self$tz,
@@ -231,15 +333,41 @@ TZ <- R6Class("TZ", public=list(
 
 tz <- TZ$new()
 tz$get()
+```
+
+```
+## [1] "US/Hawaii"
+```
+
+```r
 tz$set("US/Hawaii") # I wish
 tz$get()
+```
+
+```
+## [1] "US/Hawaii"
+```
+
+```r
 tz$set("Mars")
+```
+
+```
+## Error in tz$set("Mars"): new_tz %in% OlsonNames() is not TRUE
+```
+
+```r
 tz$get()
+```
+
+```
+## [1] "US/Hawaii"
 ```
 
 ### 5. Create an R6 class that manages the current working directory. It should have $get() and $set() methods.
 
-```{r, error=TRUE}
+
+```r
 WD <- R6Class("WD", public=list(
   wd=getwd(),
   get=function() self$wd,
@@ -252,12 +380,44 @@ WD <- R6Class("WD", public=list(
 
 wd <- WD$new()
 wd$get()
+```
+
+```
+## [1] "/Users/jmaloof/git/AdvancedR"
+```
+
+```r
 wd$set("../") 
 wd$get()
+```
+
+```
+## [1] "../"
+```
+
+```r
 wd$set("Mars")
+```
+
+```
+## Error in wd$set("Mars"): dir.exists(new_wd) is not TRUE
+```
+
+```r
 wd$get()
+```
+
+```
+## [1] "../"
+```
+
+```r
 wd$set("/Users/jmaloof/git/AdvancedR")
 wd$get()
+```
+
+```
+## [1] "/Users/jmaloof/git/AdvancedR"
 ```
 
 ### 5. Why can’t you model the time zone or current working directory with an S3 class?
