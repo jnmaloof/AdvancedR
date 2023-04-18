@@ -283,3 +283,87 @@ wd$get()
 no modify in place?
 
 ### 6. What base type are R6 objects built on top of? What attributes do they have?
+
+```{r}
+
+```
+
+## 14.3 Controlling Access
+
+R6class() has two other arguments:
+
+*`private` create fields and methods that are only available inside the class
+* `active` to define dynamic or active fields (whatever that means)
+
+### 14.3.1 Privacy
+
+* use the private argument just like public
+* access using private$ instead of self$
+
+```{r}
+Person <- R6Class("Person", 
+  public = list(
+    initialize = function(name, age = NA) {
+      private$name <- name
+      private$age <- age
+    },
+    print = function(...) {
+      cat("Person: \n")
+      cat("  Name: ", private$name, "\n", sep = "")
+      cat("  Age:  ", private$age, "\n", sep = "")
+    }
+  ),
+  private = list(
+    age = NA,
+    name = NULL
+  )
+)
+
+hadley3 <- Person$new("Hadley")
+hadley3
+
+hadley3$name
+
+```
+### 14.3.2 active
+
+behave like fields but are defined as methods
+
+### 14.3.3 Exercises
+
+#### 1. Create a bank account class that prevents you from directly setting the account balance, but you can still withdraw from and deposit to. Throw an error if you attempt to go into overdraft.
+
+
+```{r}
+BankAccount <- R6Class("BankAcount", 
+                       public = list(
+                         initialize = function(amt = 0) {
+                           private$balance = amt
+                         }
+  deposit = function(amt) {
+    private$balance <- private$balance + amt
+    invisible(self)
+  },
+  withdraw = function(amt) {
+    private$balance <- private$balance - amt
+    invisible(self)
+  },
+  print = function() {
+    cat("The current balance is: ", private$balance, "\n")
+    invisible(self)
+  }
+))
+
+BA1 <- BankAccountBasic$new()
+
+BA1$deposit(100)
+BA1$withdraw(33)
+BA1
+```
+
+
+#### 2. Create a class with a write-only $password field. It should have $check_password(password) method that returns TRUE or FALSE, but there should be no way to view the complete password.
+
+#### 3. Extend the Rando class with another active binding that allows you to access the previous random value. Ensure that active binding is the only way to access the value.
+
+#### 4. Can subclasses access private fields/methods from their parent? Perform an experiment to find out.
