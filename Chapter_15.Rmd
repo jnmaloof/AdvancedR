@@ -1,0 +1,85 @@
+---
+title: "Chapter_15.Rmd"
+output: html_document
+date: "2023-04-20"
+---
+
+# S4
+
+```{r}
+library(methods) # not necessary in interactive scripts, but good practice
+```
+
+## 15.2 Basics
+
+Use `setClass` and `new`:
+
+```{r}
+setClass("Person",
+         slots = c(
+           name = "character", # why in quotes?
+           age = "numeric"
+         ))
+
+```
+
+```{r}
+john <- new("Person", name = "John Davis", age = NA_real_)
+```
+
+
+```{r}
+is(john)
+is(john, "Person")
+```
+
+```{r}
+john@name
+slot(john, "name")
+```
+
+create a setter and getter for age slot but creating generics and them methods
+
+note that the help files say we don't need to call standardGeneric
+```{r}
+setGeneric("age", function(x) standardGeneric("age"))
+setGeneric("age<-", function(x, value) standardGeneric("age<-"))
+```
+
+```{r}
+setMethod("age", "Person", function(x) x@age)
+setMethod("age<-", "Person", function(x, value) {
+  x@age <- value
+  x
+})
+
+age(john) <- 30
+age(john)
+```
+
+### 15.2.1 Exercises
+
+#### 1.lubridate::period() returns an S4 class. What slots does it have? What class is each slot? What accessors does it provide?
+
+```{r}
+per <- lubridate::period()
+is(per)
+```
+
+```{r}
+class?Period
+slotNames(per)
+```
+
+```{r}
+
+```
+
+
+
+#### 2. What other ways can you find help for a method? Read ?"?" and summarise the details.
+
+```{r}
+
+```
+
