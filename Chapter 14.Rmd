@@ -339,31 +339,106 @@ BankAccount <- R6Class("BankAcount",
                        public = list(
                          initialize = function(amt = 0) {
                            private$balance = amt
+                         },
+                         deposit = function(amt) {
+                           private$balance <- private$balance + amt
+                           invisible(self)
+                         },
+                         withdraw = function(amt) {
+                           private$balance <- private$balance - amt
+                           invisible(self)
+                         },
+                         print = function() {
+                           cat("The current balance is: ", private$balance, "\n")
+                           invisible(self)
                          }
-  deposit = function(amt) {
-    private$balance <- private$balance + amt
-    invisible(self)
-  },
-  withdraw = function(amt) {
-    private$balance <- private$balance - amt
-    invisible(self)
-  },
-  print = function() {
-    cat("The current balance is: ", private$balance, "\n")
-    invisible(self)
-  }
-))
+                       ),
+                       private = list(balance = NULL)
+)
 
-BA1 <- BankAccountBasic$new()
+BA <- BankAccount$new(125)
 
-BA1$deposit(100)
-BA1$withdraw(33)
+BA
+
+BA$deposit(100)
+BA$withdraw(33)
+BA
+```
+
+
+```{r, error=TRUE}
+BA$balance <- 200
+BA
+
+BA1$balance <- 200 # the one with public balance
 BA1
 ```
 
 
 #### 2. Create a class with a write-only $password field. It should have $check_password(password) method that returns TRUE or FALSE, but there should be no way to view the complete password.
 
+```{r, error=TRUE}
+authenticator <- R6Class("authenticator",
+                         public = list(
+                           initialize = function(passwd) {
+                             private$.password <- passwd
+                           },
+                           print = function() {
+                             cat("It is not possible to view the password.\n")
+                             cat("Use `check_password()` method to check a password\n")
+                           },
+                           check_password = function(passwd) {
+                             passwd == private$.password
+                           }
+                         ),
+                         private = list(
+                           .password = NULL),
+                         active = list(
+                           password = function(value) {
+                             if(missing(value)) {
+                               stop("password is write-only\n", call.=FALSE)
+                            } else {
+                              private$.password <- value
+                             }
+                           }
+                         ))
+
+au <- authenticator$new("ps1")
+au
+
+au$check_password("ps2")
+au$check_password("ps1")
+au$password
+au$password <- "ps3"
+au$check_password("ps3")
+```
+
+
 #### 3. Extend the Rando class with another active binding that allows you to access the previous random value. Ensure that active binding is the only way to access the value.
 
 #### 4. Can subclasses access private fields/methods from their parent? Perform an experiment to find out.
+
+### 14.4 Reference Semantics
+
+R6 are reference semantics, and are not copied on modify!!
+
+```{r}
+y1 <- Accumulator$new() 
+y2 <- y1
+
+y1$add(10)
+c(y1 = y1$sum, y2 = y2$sum)
+
+```
+
+Need to use clone
+
+```{r}
+y1 <- Accumulator$new() 
+y2 <- y1$clone()
+
+y1$add(10)
+c(y1 = y1$sum, y2 = y2$sum)
+
+```
+
