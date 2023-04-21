@@ -8,6 +8,7 @@ date: "2023-04-20"
 
 ```{r}
 library(methods) # not necessary in interactive scripts, but good practice
+library(lubridate)
 ```
 
 ## 15.2 Basics
@@ -66,20 +67,70 @@ per <- lubridate::period()
 is(per)
 ```
 
-```{r}
-class?Period
-slotNames(per)
-```
 
 ```{r}
 
+tibble(name=slotNames(per),
+       class=map_chr(name, ~ class(getElement(per, .x))))
+
 ```
-
-
 
 #### 2. What other ways can you find help for a method? Read ?"?" and summarise the details.
 
 ```{r}
-
+?"?"
 ```
 
+### 15.3.6 Exercises
+
+#### 1. Extend the Person class with fields to match utils::person(). Think about what slots you will need, what class each slot should have, and what you’ll need to check in your validity method.
+
+```{r}
+setClass("Person", 
+  slots = c(
+    given = "character", 
+    family = "character",
+#    middle = "character",
+    email = "charater",
+    role = "character",
+    comment = "character",
+#    first = "character",
+#    last = "character",
+    age = "numeric"
+  ), 
+  prototype = list(
+    given = NA_character_,
+    family = NA_character_,
+    email = NA_character_,
+    role = NA_character_,
+    comment = NA_character_,
+    age = NA_real_
+  )
+)
+
+Person <- function(given, family=NA, email=NA, role=NA, comment=NA, age=NA) {
+  age <- as.double(age)
+  
+  new("Person", name = name, age = age)
+}
+
+setValidity("Person", function(object) {
+  lengths <- c(object@given, 
+               object@family,
+               object@email,
+               object@role,
+               object@comment,
+               object@age)
+  if (length(object@name) != length(object@age)) {
+    "@name and @age must be same length"
+  } else {
+    
+    TRUE
+  }
+})
+```
+
+
+#### 2. What happens if you define a new S4 class that doesn’t have any slots? (Hint: read about virtual classes in ?setClass.)
+
+#### 3. Imagine you were going to reimplement factors, dates, and data frames in S4. Sketch out the setClass() calls that you would use to define the classes. Think about appropriate slots and prototype.
