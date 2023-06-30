@@ -1,0 +1,199 @@
+---
+title: "Chapter 17"
+author: "Julin Maloof"
+date: "2023-06-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 17 Metaprogramming overview
+
+```{r}
+library(rlang)
+library(lobstr)
+```
+
+## 17.2 Code is data
+
+can use `rlang::expr()` to capture code:
+
+```{r}
+expr(mean(x, na.rm = TRUE))
+#> mean(x, na.rm = TRUE)
+expr(10 + 100 + 1000)
+#> 10 + 100 + 1000
+```
+
+Captures code is called an `expression`
+
+`expr()` Doesn't work in arguments passed to functions.  but `enexpr()` does.  This quotes the argument
+
+```{r}
+capture_it <- function(x) {
+  enexpr(x)
+}
+capture_it(a + b + c)
+#> a + b + c
+```
+
+
+Captured code behaves like a list and can be modified:
+
+```{r}
+f <- expr(f(x = 1, y = 2))
+
+# Add a new argument
+f$z <- 3
+f
+
+# Or remove an argument:
+f[[2]] <- NULL
+f
+```
+
+Note that the first element is the function to be called
+
+```{r}
+f[[1]]
+```
+
+## 17.3 Code as a tree
+
+Code can be displayed as an abstract syntax tree (AST)
+
+```{r}
+lobstr::ast(f1(f2(a, b), f3(1, f4(2))))
+```
+
+## 17.4 Code cqn generate code
+
+`call2()` can generate a function call with arguments:
+
+```{r}
+call2("f", 1, 2, 3)
+call2("+", 1, call2("*", 2, 3))
+```
+
+
+You can also use `expr` and `enexpr` and the unquote `!!` operator
+
+```{r}
+xx <- expr(x + x)
+yy <- expr(y + y)
+
+xx
+yy
+```
+
+
+```{r}
+expr(xx / yy)
+
+expr(!!xx / !!yy)
+```
+
+Can build up functions from user input (although I don't really understand this example)
+
+```{r}
+cv <- function(var) {
+  var <- enexpr(var)
+  expr(sd(!!var) / mean(!!var))
+}
+
+cv(x)
+#> sd(x)/mean(x)
+cv(x + y)
+#> sd(x + y)/mean(x + y)
+```
+
+## 17.5 evaluation runs code
+
+`eval` runs an expression.  You can give it an environment or it will use the current environment.
+
+```{r}
+eval(expr(x + y), env(x = 1, y = 10))
+#> [1] 11
+eval(expr(x + y), env(x = 2, y = 100))
+#> [1] 102
+```
+
+
+## 17.6 Customizing evaluation of functions
+
+We can overide the meaning of functions in a given environment
+
+```{r}
+string_math <- function(x) {
+  e <- env(
+    caller_env(),
+    `+` = function(x, y) paste0(x, y),
+    `*` = function(x, y) strrep(x, y)
+  )
+
+  eval(enexpr(x), e)
+}
+
+name <- "Hadley"
+string_math("Hello " + name)
+#> [1] "Hello Hadley"
+string_math(("x" * 2 + "-y") * 3)
+#> [1] "xx-yxx-yxx-y"
+```
+
+## 17.7 Customizing evaluation with data
+
+provide a data mask using `eval_tidy`
+
+```{r}
+df <- data.frame(x = 1:5, y = sample(5))
+eval_tidy(expr(x + y), df)
+#> [1] 6 6 4 6 8
+```
+
+Can create a second `with`
+
+```{r}
+with2 <- function(df, expr) {
+  eval_tidy(enexpr(expr), df)
+}
+
+with2(df, x + y)
+#> [1] 6 6 4 6 8
+```
+
+but there is a bug...
+
+## 17.8 quosures
+
+```{r}
+with2 <- function(df, expr) {
+  a <- 1000
+  eval_tidy(enexpr(expr), df)
+}
+```
+
+```{r}
+df <- data.frame(x = 1:3)
+a <- 10
+with2(df, x + a)
+#> [1] 1001 1002 1003
+```
+
+using the wrong `a`!
+
+Solve by using an quosure.  This bundles the expresion with its environment
+
+```{r}
+with2 <- function(df, expr) {
+  a <- 1000
+  eval_tidy(enquo(expr), df)
+}
+
+with2(df, x + a)
+#> [1] 11 12 13
+```
+
+
