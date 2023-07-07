@@ -1,0 +1,240 @@
+---
+title: "Chapter 18"
+author: "Julin Maloof"
+date: "2023-07-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rlang)
+library(lobstr)
+```
+
+# Expressions
+
+## 18.1 Intro
+
+Need to capture the intent of code without running it.  This is what an expression is.
+
+```{r}
+z <- rlang::expr(y <- x * 10)
+z
+#> y <- x * 10
+```
+
+An expression is an object that captures the structure of the code.
+
+You can evaluate an expression (run it) using `eval()`
+
+```{r}
+x <- 4
+eval(z)
+y
+```
+
+## 18.2 Abstract Structure Trees
+
+Expressions are also called abstract syntax trees (ASTs)
+
+```{r}
+ast(f(x, "y", 1))
+```
+
+```{r}
+lobstr::ast(f(g(1, 2), h(3, 4, i())))
+```
+
+### 18.2.4 Exercises
+
+#### 1. Reconstruct the code from the ASTs:
+
+`f(g,h)`
+
+`3 + 1 + 2`
+
+`(x+y) * z`
+
+#### 2. Draw and check
+
+```{r}
+ast(f(g(h(i(1, 2, 3)))))
+
+ast(f(1, g(2, h(3, i()))))
+```
+#### 3. What is happening with these trees?
+
+infix functions.  
+
+#### 4. What is special about the AST below? (Hint: re-read Section 6.2.1.)
+
+```{r}
+lobstr::ast(function(x = 1, y = 2) {})
+
+```
+#### 5. What does the call tree of an if statement with multiple else if conditions look like? Why?
+
+```{r}
+ast(
+  if(x < 10) {
+    c(1) 
+    } else {
+      if(y <10) {
+        c(2) 
+        } else {
+        c(3)
+        } 
+    }
+
+)
+
+```
+
+## 18.3 Expressions
+
+Expressions can be constant scalars, symbols, call objects, and pairlists.
+
+### 18.3.1 Constants
+
+either NULL or a lengh-1 atomic vector
+
+### 18.3.2
+
+A symbol represents the name of an object.
+
+Can create one two ways:
+
+```{r}
+expr(x)
+
+sym("x")
+```
+
+
+can turn back in to string with:
+
+```{r}
+as_string(expr(x))
+
+as.character(expr(x))
+```
+
+testing for a symbol
+```{r}
+str(expr(x))
+
+is.symbol(expr(x))
+```
+
+### 18.3.3 Calls
+
+A captured function call
+
+A special type of list, where the first component specifies the function to call and the remaining elements are the arguments for that call
+
+test with `is.call`
+```{r}
+x <- expr(read.table("important.csv", row.names = FALSE))
+
+typeof(x)
+is.call(x)
+```
+
+### 18.3.3.a Subsetting.
+
+Like subsetting a list
+
+```{r}
+x[[1]]
+```
+
+```{r}
+as.list(x[-1])
+```
+extracting individual arguments is tough because of r's flexible argument matching.  Use `call_standardize` to fix this:
+
+```{r}
+rlang::call_standardise(x)
+#> read.table(file = "important.csv", row.names = FALSE)
+```
+
+
+Can modify just like  list:
+
+```{r}
+x$header <- TRUE
+x
+#> read.table("important.csv", row.names = FALSE, header = TRUE)
+```
+
+### 18.3.4 Exercises
+
+#### 1 Which two of the six types of atomic vector can’t appear in an expression? Why? Similarly, why can’t you create an expression that contains an atomic vector of length greater than one?
+
+I would guess that complex and raw cannot appear in expressions.  Maybe becuase you cannot type them directly.
+
+Same, length greater than one you can't just type out but have to have a call.
+
+#### 2 What happens when you subset a call object to remove the first element? e.g. expr(read.csv("foo.csv", header = TRUE))[-1]. Why?
+
+```{r}
+expr(read.csv("foo.csv", header = TRUE))[-1]
+```
+
+What was the second position now becomes first and is treated as a function (because by definition the first element of a call object is the function)
+
+#### 3. Describe the differences:
+
+```{r}
+x <- 1:10
+
+call2(median, x, na.rm = TRUE)
+print("-")
+
+call2(expr(median), x, na.rm = TRUE)
+print("-")
+
+call2(median, expr(x), na.rm = TRUE)
+print("-")
+
+call2(expr(median), expr(x), na.rm = TRUE)
+print("-")
+```
+Basically, encapsulating in `expr` is preventing the object from being evaluated in `call2`
+
+#### 4. call_standardize does not well for the below.  Why not?  What makes mean specia?
+
+```{r}
+call_standardise(quote(mean(1:10, na.rm = TRUE)))
+#> mean(x = 1:10, na.rm = TRUE)
+call_standardise(quote(mean(n = T, 1:10)))
+#> mean(x = 1:10, n = T)
+call_standardise(quote(mean(x = 1:10, , TRUE)))
+#> mean(x = 1:10, , TRUE)
+```
+
+because of `...`
+
+#### 5. Why does this code not make sense?
+
+```{r}
+x <- expr(foo(x = 1))
+names(x) <- c("x", "y")
+```
+Because what does it mean to name the function in the call?
+
+#### 6. Construct the expression if(x > 1) "a" else "b" using multiple calls to call2(). How does the code structure reflect the structure of the AST?
+
+```{r}
+z <- call2("if", "x>1", "a", "b")
+# doesn't seem like I need multiple calls
+
+z
+
+ast(if(x > 1) "a" else "b")
+```
+
+
