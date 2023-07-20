@@ -324,4 +324,53 @@ What does expr_text() do instead?
 
 _puts in a new line_
 
-pairwise.t.test() assumes that deparse() always returns a length one character vector. Can you construct an input that violates this expectation? What happens?
+#### 10. pairwise.t.test() assumes that deparse() always returns a length one character vector. Can you construct an input that violates this expectation? What happens?
+
+## 18.5 Walking the AST with recursive functions
+
+Function for base case:
+
+```{r}
+expr_type <- function(x) {
+  if (rlang::is_syntactic_literal(x)) {
+    "constant"
+  } else if (is.symbol(x)) {
+    "symbol"
+  } else if (is.call(x)) {
+    "call"
+  } else if (is.pairlist(x)) {
+    "pairlist"
+  } else {
+    typeof(x)
+  }
+}
+```
+
+
+Switch function (not sure I understand this...)
+
+```{r}
+switch_expr <- function(x, ...) {
+  switch(expr_type(x),
+    ...,
+    stop("Don't know how to handle type ", typeof(x), call. = FALSE)
+  )
+}
+```
+
+Walk the tree 
+
+```{r}
+recurse_call <- function(x) {
+  switch_expr(x,
+    # Base cases
+    symbol = ,
+    constant = ,
+
+    # Recursive cases
+    call = ,
+    pairlist =
+  )
+}
+```
+
