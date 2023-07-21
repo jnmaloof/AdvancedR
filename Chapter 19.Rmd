@@ -180,7 +180,7 @@ also note that `~` is a quoting function that captures the environment.
 
 in addition to quoting, `substitute` will substitute in the values of symbols in the current environment
 
-### 18.3.6 Exercises:
+### 19.3.6 Exercises:
 
 #### 1. how is expr() implemented?
 
@@ -247,6 +247,13 @@ Create examples that illustrate each of the above cases.
 x <- 5
 substitute(x+y*2, list(y=4))
 #x not substituted, y substituted
+
+substitute(x+y*2, .GlobalEnv)
+
+substitute(x+y*2, list(y=4, x=x))
+
+substitute(x+y*2, as.list(.GlobalEnv))
+
 ```
 
 
@@ -266,6 +273,12 @@ f6_3 <- function(y) {
 }
 f6_3(y=4)
 #compare with # 1
+
+f6_3 <- function(y) {
+  x <- 5 
+  substitute(x+y*2, .GlobalEnv)
+}
+f6_3(y=4)
 ```
 
 
