@@ -437,7 +437,56 @@ expr_print(b)
 
 Base R mostly selectively turns off quoting as needed, rather than unquoting.  This is called non-quoting.
 
-```{r}
+## 19.6 ...
 
+### 19.6 Exercises
+
+#### 1. One way to implement exec() is shown below. Describe how it works. What are the key ideas?
+
+```{r}
+exec <- function(f, ..., .env = caller_env()) {
+  args <- list2(...)
+  do.call(f, args, envir = .env)
+}
 ```
 
+Captures the calling environment, but allows user to set something else
+
+uses `list2` to deal with the possibility that `...` is a list or not.
+
+#### 2. Carefully read the source code for interaction(), expand.grid(), and par(). Compare and contrast the techniques they use for switching between dots and list behaviour.
+
+```{r}
+interaction
+```
+
+```{r}
+expand.grid
+```
+```{r}
+par
+```
+
+interaction checks to see if the first item in ... is a list, and if so it uses that.  expand.grid seems functionally equivalent
+
+#### 3 Explain the problem with this definition of set_attr()
+
+```{r, error=TRUE}
+set_attr <- function(x, ...) {
+  attr <- rlang::list2(...)
+  #print(attr)
+  attributes(x) <- attr
+  x
+}
+set_attr(1:10, x = 10)
+#> Error in attributes(x) <- attr: attributes must be named
+```
+Problem is that we have a named argument `x`.  When we call the function, x ends up being 10 and ... is the (unamed) vector `1:10`
+```{r, error=TRUE}
+set_attr <- function(x, ...) {
+  attr <- rlang::list2(..., .named=TRUE)
+  attributes(y) <- attr
+  x
+}
+set_attr(1:10, y = 10)
+```
