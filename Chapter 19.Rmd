@@ -490,3 +490,86 @@ set_attr <- function(x, ...) {
 }
 set_attr(1:10, y = 10)
 ```
+
+### 14.7 exercises
+
+#### 1. In the linear-model example, we could replace the expr() in reduce(summands, ~ expr(!!.x + !!.y)) with call2(): reduce(summands, call2, "+"). Compare and contrast the two approaches. Which do you think is easier to read?
+
+```{r}
+linear <- function(var, val) {
+  var <- ensym(var)
+  coef_name <- map(seq_along(val[-1]), ~ expr((!!var)[[!!.x]]))
+
+  summands <- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
+  summands <- c(val[[1]], summands)
+
+  reduce(summands, ~ expr(!!.x + !!.y))
+}
+
+linear(x, c(10, 5, -4))
+```
+
+```{r, error=TRUE}
+linear <- function(var, val) {
+  var <- ensym(var)
+  coef_name <- map(seq_along(val[-1]), ~ expr((!!var)[[!!.x]]))
+
+  summands <- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
+  summands <- c(val[[1]], summands)
+
+  reduce(summands, call2, "+")
+}
+
+linear(x, c(10, 5, -4))
+```
+
+#### 2. Re-implement the Box-Cox transform defined below using unquoting and new_function():
+
+```{r}
+bc <- function(lambda) {
+  if (lambda == 0) {
+    function(x) log(x)
+  } else {
+    function(x) (x ^ lambda - 1) / lambda
+  }
+}
+
+bc(0)
+
+bc(0.5)
+```
+
+```{r}
+bc2 <- function(lambda) {
+  if (lambda == 0) {
+    new_function(exprs(x=), expr(log(x) ))
+  } else {
+    new_function(exprs(x=), expr((x ^ !!lambda - 1) / !!lambda))
+  }
+}
+
+bc2(0)
+
+bc2(0.5)
+```
+#### 3 Re-implement the simple compose() defined below using quasiquotation and new_function():
+
+```{r}
+compose <- function(f, g) {
+  function(...) f(g(...))
+}
+
+compose(mean, median)
+```
+
+
+```{r}
+compose2 <- function(f, g) {
+  f <- enexpr(f)
+  g <- enexpr(g)
+  new_function(exprs(...=), expr((!!f)((!!g)(...))))
+}
+
+compose2(mean, median)
+```
+
