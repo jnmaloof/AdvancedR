@@ -525,7 +525,7 @@ environment.</p>
 the values of symbols in the current environment</p>
 </div>
 <div id="exercises-1" class="section level3">
-<h3>18.3.6 Exercises:</h3>
+<h3>19.3.6 Exercises:</h3>
 <div id="how-is-expr-implemented" class="section level4">
 <h4>1. how is expr() implemented?</h4>
 <pre class="r"><code>expr</code></pre>
@@ -533,7 +533,7 @@ the values of symbols in the current environment</p>
 ## {
 ##     enexpr(expr)
 ## }
-## &lt;bytecode: 0x1274da870&gt;
+## &lt;bytecode: 0x1151521d0&gt;
 ## &lt;environment: namespace:rlang&gt;</code></pre>
 </div>
 <div id="compare-and-contrast-the-following-two-functions.-can-you-predict-the-output-before-running-them" class="section level4">
@@ -610,7 +610,14 @@ is .GlobalEnv in which case the symbol is left unchanged.</li>
 x &lt;- 5
 substitute(x+y*2, list(y=4))</code></pre>
 <pre><code>## x + 4 * 2</code></pre>
-<pre class="r"><code>#x not substituted, y substituted</code></pre>
+<pre class="r"><code>#x not substituted, y substituted
+
+substitute(x+y*2, .GlobalEnv)</code></pre>
+<pre><code>## x + y * 2</code></pre>
+<pre class="r"><code>substitute(x+y*2, list(y=4, x=x))</code></pre>
+<pre><code>## 5 + 4 * 2</code></pre>
+<pre class="r"><code>substitute(x+y*2, as.list(.GlobalEnv))</code></pre>
+<pre><code>## 5 + y * 2</code></pre>
 <pre class="r"><code>#2
 f6_2 &lt;- function(x)
   substitute(x+y*2)
@@ -623,7 +630,425 @@ f6_3 &lt;- function(y) {
 }
 f6_3(y=4)</code></pre>
 <pre><code>## 5 + 4 * 2</code></pre>
-<pre class="r"><code>#compare with # 1</code></pre>
+<pre class="r"><code>#compare with # 1
+
+f6_3 &lt;- function(y) {
+  x &lt;- 5 
+  substitute(x+y*2, .GlobalEnv)
+}
+f6_3(y=4)</code></pre>
+<pre><code>## x + y * 2</code></pre>
+</div>
+</div>
+</div>
+<div id="section-1" class="section level2">
+<h2>19.4</h2>
+<div id="unquote-one-argument" class="section level3">
+<h3>19.4.1 unquote one argument</h3>
+<p>Use <code>!!</code></p>
+</div>
+<div id="unquoting-a-function" class="section level3">
+<h3>19.4.2 unquoting a function</h3>
+<p>You can also use <code>!!</code> but pay attention to operatior
+precedence. You need an extra set of parentheses</p>
+<pre class="r"><code># correct way to only unquote f
+x &lt;- 1
+y &lt;- 2
+f &lt;- expr(foo)
+expr((!!f)(x, y))</code></pre>
+<pre><code>## foo(x, y)</code></pre>
+<pre class="r"><code>#&gt; foo(x, y)
+#&gt; 
+#&gt; #compare to
+ expr(!!f(x,y)) # error!</code></pre>
+<pre><code>## Error in f(x, y): could not find function &quot;f&quot;</code></pre>
+<p>Works when f is a call but perhaps cleaner to use rlang::call2</p>
+<pre class="r"><code>f &lt;- expr(pkg::foo)
+expr((!!f)(x, y))</code></pre>
+<pre><code>## pkg::foo(x, y)</code></pre>
+<pre class="r"><code>#&gt; pkg::foo(x, y)
+
+
+call2(f, expr(x), expr(y))</code></pre>
+<pre><code>## pkg::foo(x, y)</code></pre>
+</div>
+<div id="unquoting-a-missing-argument" class="section level3">
+<h3>19.4.3 unquoting a missing argument</h3>
+<pre class="r"><code>arg &lt;- missing_arg()
+expr(foo(!!arg, !!arg))</code></pre>
+<pre><code>## Error in enexpr(expr): argument &quot;arg&quot; is missing, with no default</code></pre>
+<pre class="r"><code>#&gt; Error in enexpr(expr): argument &quot;arg&quot; is missing, with no default</code></pre>
+<p>Instead</p>
+<pre class="r"><code>expr(foo(!!maybe_missing(arg), !!maybe_missing(arg)))</code></pre>
+<pre><code>## foo(, )</code></pre>
+</div>
+<div id="unquoting-in-special-forms" class="section level3">
+<h3>19.4.4 Unquoting in special forms</h3>
+<p>infix function <code>$</code> causes problems. Workaround is to use
+the pre-fix version:</p>
+<pre class="r"><code>x &lt;- expr(x)
+expr(`$`(df, !!x))</code></pre>
+<pre><code>## df$x</code></pre>
+<pre class="r"><code>#&gt; df$x</code></pre>
+</div>
+<div id="unquoting-many-arguments" class="section level3">
+<h3>19.4.5 Unquoting many arguments</h3>
+<p>Use <code>!!!</code>, takes a list of expressions, pastes them
+together and inserts them at the !!!</p>
+<pre class="r"><code>xs &lt;- exprs(1, a, -b)
+expr(f(!!!xs, y))</code></pre>
+<pre><code>## f(1, a, -b, y)</code></pre>
+<pre class="r"><code>#&gt; f(1, a, -b, y)
+
+# Or with names
+ys &lt;- set_names(xs, c(&quot;a&quot;, &quot;b&quot;, &quot;c&quot;))
+expr(f(!!!ys, d = 4))</code></pre>
+<pre><code>## f(a = 1, b = a, c = -b, d = 4)</code></pre>
+<pre class="r"><code>#&gt; f(a = 1, b = a, c = -b, d = 4)</code></pre>
+<p><code>!!!</code> can be used anywhere that <code>...</code> is
+accepted. Helpful in <code>call2</code></p>
+<pre class="r"><code>call2(&quot;f&quot;, !!!xs, expr(y))</code></pre>
+<pre><code>## f(1, a, -b, y)</code></pre>
+<pre class="r"><code>#&gt; f(1, a, -b, y)</code></pre>
+</div>
+<div id="fiction-of" class="section level3">
+<h3>19.4.6 fiction of !!</h3>
+<p>These arent’ real operators. Can only use in Rlang aware
+situations</p>
+</div>
+<div id="misleading-asts" class="section level3">
+<h3>19.4.7 misleading ASTs</h3>
+<p>beware inline functions. expr_print or lobstr::ast can help resolve
+confusion.</p>
+</div>
+<div id="exercises-2" class="section level3">
+<h3>19.4.8 Exercises</h3>
+<p>Given the following components:</p>
+<pre class="r"><code>xy &lt;- expr(x + y)
+xz &lt;- expr(x + z)
+yz &lt;- expr(y + z)
+abc &lt;- exprs(a, b, c)</code></pre>
+<p>Use quasiquotation to construct the following calls:</p>
+<pre class="r"><code>(x + y) / (y + z)
+-(x + z) ^ (y + z)
+(x + y) + (y + z) - (x + y)
+atan2(x + y, y + z)
+sum(x + y, x + y, y + z)
+sum(a, b, c)
+mean(c(a, b, c), na.rm = TRUE)
+foo(a = x + y, b = y + z)</code></pre>
+<pre class="r"><code>expr(!!xy /!!xz)</code></pre>
+<pre><code>## (x + y)/(x + z)</code></pre>
+<pre class="r"><code>expr(-(!!xy)  ^ (!!xz))</code></pre>
+<pre><code>## -(x + y)^(x + z)</code></pre>
+<pre class="r"><code>expr((!!(xy)) + !!yz - !!xy) # how to get parentheses?</code></pre>
+<pre><code>## x + y + (y + z) - (x + y)</code></pre>
+<pre class="r"><code>expr(atan2(!!xy, !!yz))</code></pre>
+<pre><code>## atan2(x + y, y + z)</code></pre>
+<pre class="r"><code>expr(sum(!!xy, !!xy, !!yz))</code></pre>
+<pre><code>## sum(x + y, x + y, y + z)</code></pre>
+<pre class="r"><code>expr(sum(!!!abc))</code></pre>
+<pre><code>## sum(a, b, c)</code></pre>
+<pre class="r"><code>expr(mean(c(!!!abc), na.rm = TRUE)) #was I supposed to do this some more complicated way?</code></pre>
+<pre><code>## mean(c(a, b, c), na.rm = TRUE)</code></pre>
+<pre class="r"><code>expr(foo(a=!!xy, b=!!yz))</code></pre>
+<pre><code>## foo(a = x + y, b = y + z)</code></pre>
+<div id="the-following-two-calls-print-the-same-but-are-actually-different" class="section level4">
+<h4>2 The following two calls print the same, but are actually
+different:</h4>
+<pre class="r"><code>(a &lt;- expr(mean(1:10)))</code></pre>
+<pre><code>## mean(1:10)</code></pre>
+<pre class="r"><code>#&gt; mean(1:10)
+(b &lt;- expr(mean(!!(1:10))))</code></pre>
+<pre><code>## mean(1:10)</code></pre>
+<pre class="r"><code>#&gt; mean(1:10)
+identical(a, b)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>#&gt; [1] FALSE</code></pre>
+<p>What is the difference and which is more natural?</p>
+<p>b is going to go ahead and evaluate 1:10, while a won’t. Why not use
+a?</p>
+<pre class="r"><code>expr_print(a)</code></pre>
+<pre><code>## mean(1:10)</code></pre>
+<pre class="r"><code>expr_print(b)</code></pre>
+<pre><code>## mean(&lt;int: 1L, 2L, 3L, 4L, 5L, ...&gt;)</code></pre>
+</div>
+</div>
+</div>
+<div id="non-quoting" class="section level2">
+<h2>19.5 Non-quoting</h2>
+<p>Base R mostly selectively turns off quoting as needed, rather than
+unquoting. This is called non-quoting.</p>
+</div>
+<div id="section-2" class="section level2">
+<h2>19.6 …</h2>
+<div id="exercises-3" class="section level3">
+<h3>19.6 Exercises</h3>
+<div id="one-way-to-implement-exec-is-shown-below.-describe-how-it-works.-what-are-the-key-ideas" class="section level4">
+<h4>1. One way to implement exec() is shown below. Describe how it
+works. What are the key ideas?</h4>
+<pre class="r"><code>exec &lt;- function(f, ..., .env = caller_env()) {
+  args &lt;- list2(...)
+  do.call(f, args, envir = .env)
+}</code></pre>
+<p>Captures the calling environment, but allows user to set something
+else</p>
+<p>uses <code>list2</code> to deal with the possibility that
+<code>...</code> is a list or not.</p>
+</div>
+<div id="carefully-read-the-source-code-for-interaction-expand.grid-and-par.-compare-and-contrast-the-techniques-they-use-for-switching-between-dots-and-list-behaviour." class="section level4">
+<h4>2. Carefully read the source code for interaction(), expand.grid(),
+and par(). Compare and contrast the techniques they use for switching
+between dots and list behaviour.</h4>
+<pre class="r"><code>interaction</code></pre>
+<pre><code>## function (..., drop = FALSE, sep = &quot;.&quot;, lex.order = FALSE) 
+## {
+##     args &lt;- list(...)
+##     narg &lt;- length(args)
+##     if (narg &lt; 1L) 
+##         stop(&quot;No factors specified&quot;)
+##     if (narg == 1L &amp;&amp; is.list(args[[1L]])) {
+##         args &lt;- args[[1L]]
+##         narg &lt;- length(args)
+##     }
+##     for (i in narg:1L) {
+##         f &lt;- as.factor(args[[i]])[, drop = drop]
+##         l &lt;- levels(f)
+##         if1 &lt;- as.integer(f) - 1L
+##         if (i == narg) {
+##             ans &lt;- if1
+##             lvs &lt;- l
+##         }
+##         else {
+##             if (lex.order) {
+##                 ll &lt;- length(lvs)
+##                 ans &lt;- ans + ll * if1
+##                 lvs &lt;- paste(rep(l, each = ll), rep(lvs, length(l)), 
+##                   sep = sep)
+##             }
+##             else {
+##                 ans &lt;- ans * length(l) + if1
+##                 lvs &lt;- paste(rep(l, length(lvs)), rep(lvs, each = length(l)), 
+##                   sep = sep)
+##             }
+##             if (anyDuplicated(lvs)) {
+##                 ulvs &lt;- unique(lvs)
+##                 while ((i &lt;- anyDuplicated(flv &lt;- match(lvs, 
+##                   ulvs)))) {
+##                   lvs &lt;- lvs[-i]
+##                   ans[ans + 1L == i] &lt;- match(flv[i], flv[1:(i - 
+##                     1)]) - 1L
+##                   ans[ans + 1L &gt; i] &lt;- ans[ans + 1L &gt; i] - 1L
+##                 }
+##                 lvs &lt;- ulvs
+##             }
+##             if (drop) {
+##                 olvs &lt;- lvs
+##                 lvs &lt;- lvs[sort(unique(ans + 1L))]
+##                 ans &lt;- match(olvs[ans + 1L], lvs) - 1L
+##             }
+##         }
+##     }
+##     structure(as.integer(ans + 1L), levels = lvs, class = &quot;factor&quot;)
+## }
+## &lt;bytecode: 0x1155272b8&gt;
+## &lt;environment: namespace:base&gt;</code></pre>
+<pre class="r"><code>expand.grid</code></pre>
+<pre><code>## function (..., KEEP.OUT.ATTRS = TRUE, stringsAsFactors = TRUE) 
+## {
+##     nargs &lt;- length(args &lt;- list(...))
+##     if (!nargs) 
+##         return(as.data.frame(list()))
+##     if (nargs == 1L &amp;&amp; is.list(a1 &lt;- args[[1L]])) 
+##         nargs &lt;- length(args &lt;- a1)
+##     if (nargs == 0L) 
+##         return(as.data.frame(list()))
+##     cargs &lt;- vector(&quot;list&quot;, nargs)
+##     iArgs &lt;- seq_len(nargs)
+##     nmc &lt;- paste0(&quot;Var&quot;, iArgs)
+##     nm &lt;- names(args)
+##     if (is.null(nm)) 
+##         nm &lt;- nmc
+##     else if (any(ng0 &lt;- nzchar(nm))) 
+##         nmc[ng0] &lt;- nm[ng0]
+##     names(cargs) &lt;- nmc
+##     rep.fac &lt;- 1L
+##     d &lt;- lengths(args)
+##     if (KEEP.OUT.ATTRS) {
+##         dn &lt;- vector(&quot;list&quot;, nargs)
+##         names(dn) &lt;- nmc
+##     }
+##     orep &lt;- prod(d)
+##     if (orep == 0L) {
+##         for (i in iArgs) cargs[[i]] &lt;- args[[i]][FALSE]
+##     }
+##     else {
+##         for (i in iArgs) {
+##             x &lt;- args[[i]]
+##             if (KEEP.OUT.ATTRS) 
+##                 dn[[i]] &lt;- paste0(nmc[i], &quot;=&quot;, if (is.numeric(x)) 
+##                   format(x)
+##                 else x)
+##             nx &lt;- length(x)
+##             orep &lt;- orep/nx
+##             if (stringsAsFactors &amp;&amp; is.character(x)) 
+##                 x &lt;- factor(x, levels = unique(x))
+##             x &lt;- x[rep.int(rep.int(seq_len(nx), rep.int(rep.fac, 
+##                 nx)), orep)]
+##             cargs[[i]] &lt;- x
+##             rep.fac &lt;- rep.fac * nx
+##         }
+##     }
+##     if (KEEP.OUT.ATTRS) 
+##         attr(cargs, &quot;out.attrs&quot;) &lt;- list(dim = d, dimnames = dn)
+##     rn &lt;- .set_row_names(as.integer(prod(d)))
+##     structure(cargs, class = &quot;data.frame&quot;, row.names = rn)
+## }
+## &lt;bytecode: 0x115703bb0&gt;
+## &lt;environment: namespace:base&gt;</code></pre>
+<pre class="r"><code>par</code></pre>
+<pre><code>## function (..., no.readonly = FALSE) 
+## {
+##     .Pars.readonly &lt;- c(&quot;cin&quot;, &quot;cra&quot;, &quot;csi&quot;, &quot;cxy&quot;, &quot;din&quot;, &quot;page&quot;)
+##     single &lt;- FALSE
+##     args &lt;- list(...)
+##     if (!length(args)) 
+##         args &lt;- as.list(if (no.readonly) 
+##             .Pars[-match(.Pars.readonly, .Pars)]
+##         else .Pars)
+##     else {
+##         if (all(unlist(lapply(args, is.character)))) 
+##             args &lt;- as.list(unlist(args))
+##         if (length(args) == 1) {
+##             if (is.list(args[[1L]]) || is.null(args[[1L]])) 
+##                 args &lt;- args[[1L]]
+##             else if (is.null(names(args))) 
+##                 single &lt;- TRUE
+##         }
+##     }
+##     value &lt;- .External2(C_par, args)
+##     if (single) 
+##         value &lt;- value[[1L]]
+##     if (!is.null(names(args))) 
+##         invisible(value)
+##     else value
+## }
+## &lt;bytecode: 0x103f5dd38&gt;
+## &lt;environment: namespace:graphics&gt;</code></pre>
+<p>interaction checks to see if the first item in … is a list, and if so
+it uses that. expand.grid seems functionally equivalent</p>
+</div>
+<div id="explain-the-problem-with-this-definition-of-set_attr" class="section level4">
+<h4>3 Explain the problem with this definition of set_attr()</h4>
+<pre class="r"><code>set_attr &lt;- function(x, ...) {
+  attr &lt;- rlang::list2(...)
+  #print(attr)
+  attributes(x) &lt;- attr
+  x
+}
+set_attr(1:10, x = 10)</code></pre>
+<pre><code>## Error in attributes(x) &lt;- attr: attributes must be named</code></pre>
+<pre class="r"><code>#&gt; Error in attributes(x) &lt;- attr: attributes must be named</code></pre>
+<p>Problem is that we have a named argument <code>x</code>. When we call
+the function, x ends up being 10 and … is the (unamed) vector
+<code>1:10</code></p>
+<pre class="r"><code>set_attr &lt;- function(x, ...) {
+  attr &lt;- rlang::list2(..., .named=TRUE)
+  attributes(y) &lt;- attr
+  x
+}
+set_attr(1:10, y = 10)</code></pre>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
+</div>
+</div>
+<div id="exercises-4" class="section level3">
+<h3>14.7 exercises</h3>
+<div id="in-the-linear-model-example-we-could-replace-the-expr-in-reducesummands-expr.x-.y-with-call2-reducesummands-call2-.-compare-and-contrast-the-two-approaches.-which-do-you-think-is-easier-to-read" class="section level4">
+<h4>1. In the linear-model example, we could replace the expr() in
+reduce(summands, ~ expr(!!.x + !!.y)) with call2(): reduce(summands,
+call2, “+”). Compare and contrast the two approaches. Which do you think
+is easier to read?</h4>
+<pre class="r"><code>linear &lt;- function(var, val) {
+  var &lt;- ensym(var)
+  coef_name &lt;- map(seq_along(val[-1]), ~ expr((!!var)[[!!.x]]))
+
+  summands &lt;- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
+  summands &lt;- c(val[[1]], summands)
+
+  reduce(summands, ~ expr(!!.x + !!.y))
+}
+
+linear(x, c(10, 5, -4))</code></pre>
+<pre><code>## 10 + (5 * x[[1L]]) + (-4 * x[[2L]])</code></pre>
+<pre class="r"><code>linear &lt;- function(var, val) {
+  var &lt;- ensym(var)
+  coef_name &lt;- map(seq_along(val[-1]), ~ expr((!!var)[[!!.x]]))
+
+  summands &lt;- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
+  summands &lt;- c(val[[1]], summands)
+
+  reduce(summands, call2, &quot;+&quot;)
+}
+
+linear(x, c(10, 5, -4))</code></pre>
+<pre><code>## Error in `fn()`:
+## ! Can&#39;t create call to non-callable object</code></pre>
+</div>
+<div id="re-implement-the-box-cox-transform-defined-below-using-unquoting-and-new_function" class="section level4">
+<h4>2. Re-implement the Box-Cox transform defined below using unquoting
+and new_function():</h4>
+<pre class="r"><code>bc &lt;- function(lambda) {
+  if (lambda == 0) {
+    function(x) log(x)
+  } else {
+    function(x) (x ^ lambda - 1) / lambda
+  }
+}
+
+bc(0)</code></pre>
+<pre><code>## function(x) log(x)
+## &lt;environment: 0x12064fd48&gt;</code></pre>
+<pre class="r"><code>bc(0.5)</code></pre>
+<pre><code>## function(x) (x ^ lambda - 1) / lambda
+## &lt;bytecode: 0x107484f98&gt;
+## &lt;environment: 0x120714ad8&gt;</code></pre>
+<pre class="r"><code>bc2 &lt;- function(lambda) {
+  if (lambda == 0) {
+    new_function(exprs(x=), expr(log(x) ))
+  } else {
+    new_function(exprs(x=), expr((x ^ !!lambda - 1) / !!lambda))
+  }
+}
+
+bc2(0)</code></pre>
+<pre><code>## function (x) 
+## log(x)
+## &lt;environment: 0x110063620&gt;</code></pre>
+<pre class="r"><code>bc2(0.5)</code></pre>
+<pre><code>## function (x) 
+## (x^(0.5 - 1))/0.5
+## &lt;environment: 0x1043a03b8&gt;</code></pre>
+</div>
+<div id="re-implement-the-simple-compose-defined-below-using-quasiquotation-and-new_function" class="section level4">
+<h4>3 Re-implement the simple compose() defined below using
+quasiquotation and new_function():</h4>
+<pre class="r"><code>compose &lt;- function(f, g) {
+  function(...) f(g(...))
+}
+
+compose(mean, median)</code></pre>
+<pre><code>## function(...) f(g(...))
+## &lt;environment: 0x1155cd248&gt;</code></pre>
+<pre class="r"><code>compose2 &lt;- function(f, g) {
+  f &lt;- enexpr(f)
+  g &lt;- enexpr(g)
+  new_function(exprs(...=), expr((!!f)((!!g)(...))))
+}
+
+compose2(mean, median)</code></pre>
+<pre><code>## function (...) 
+## mean(median(...))
+## &lt;environment: 0x11588c6d8&gt;</code></pre>
 </div>
 </div>
 </div>

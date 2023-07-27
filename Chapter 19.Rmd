@@ -382,7 +382,7 @@ abc <- exprs(a, b, c)
 Use quasiquotation to construct the following calls:
 
 
-```{r}
+```{r, eval=FALSE}
 (x + y) / (y + z)
 -(x + z) ^ (y + z)
 (x + y) + (y + z) - (x + y)
