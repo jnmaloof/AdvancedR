@@ -281,4 +281,163 @@ f6_3 <- function(y) {
 f6_3(y=4)
 ```
 
+## 19.4
+
+### 19.4.1 unquote one argument
+
+Use `!!`
+
+### 19.4.2 unquoting a function
+
+You can also use `!!` but pay attention to operatior precedence.  You need an extra set of parentheses
+
+```{r, error=TRUE}
+# correct way to only unquote f
+x <- 1
+y <- 2
+f <- expr(foo)
+expr((!!f)(x, y))
+#> foo(x, y)
+#> 
+#> #compare to
+ expr(!!f(x,y)) # error!
+```
+
+Works when f is a call but perhaps cleaner to use rlang::call2
+
+```{r}
+f <- expr(pkg::foo)
+expr((!!f)(x, y))
+#> pkg::foo(x, y)
+
+
+call2(f, expr(x), expr(y))
+
+```
+
+### 19.4.3 unquoting a missing argument
+
+```{r, error=TRUE}
+arg <- missing_arg()
+expr(foo(!!arg, !!arg))
+#> Error in enexpr(expr): argument "arg" is missing, with no default
+```
+
+Instead
+```{r}
+expr(foo(!!maybe_missing(arg), !!maybe_missing(arg)))
+```
+
+### 19.4.4 Unquoting in special forms
+
+infix function `$` causes problems.  Workaround is to use the pre-fix version:
+
+```{r}
+x <- expr(x)
+expr(`$`(df, !!x))
+#> df$x
+```
+
+### 19.4.5 Unquoting many arguments
+
+Use `!!!`, takes a list of expressions, pastes them together and inserts them at the !!!
+
+```{r}
+xs <- exprs(1, a, -b)
+expr(f(!!!xs, y))
+#> f(1, a, -b, y)
+
+# Or with names
+ys <- set_names(xs, c("a", "b", "c"))
+expr(f(!!!ys, d = 4))
+#> f(a = 1, b = a, c = -b, d = 4)
+```
+
+`!!!` can be used anywhere that `...` is accepted.  Helpful in `call2`
+
+```{r}
+call2("f", !!!xs, expr(y))
+#> f(1, a, -b, y)
+```
+
+### 19.4.6 fiction of !!
+
+These arent' real operators.  Can only use in Rlang aware situations
+
+### 19.4.7 misleading ASTs
+
+beware inline functions.  expr_print or lobstr::ast can help resolve confusion.
+
+### 19.4.8 Exercises
+
+Given the following components:
+
+```{r}
+xy <- expr(x + y)
+xz <- expr(x + z)
+yz <- expr(y + z)
+abc <- exprs(a, b, c)
+```
+
+Use quasiquotation to construct the following calls:
+
+
+```{r}
+(x + y) / (y + z)
+-(x + z) ^ (y + z)
+(x + y) + (y + z) - (x + y)
+atan2(x + y, y + z)
+sum(x + y, x + y, y + z)
+sum(a, b, c)
+mean(c(a, b, c), na.rm = TRUE)
+foo(a = x + y, b = y + z)
+```
+
+```{r}
+expr(!!xy /!!xz)
+
+expr(-(!!xy)  ^ (!!xz))
+
+expr((!!(xy)) + !!yz - !!xy) # how to get parentheses?
+
+expr(atan2(!!xy, !!yz))
+
+expr(sum(!!xy, !!xy, !!yz))
+
+expr(sum(!!!abc))
+
+expr(mean(c(!!!abc), na.rm = TRUE)) #was I supposed to do this some more complicated way?
+
+expr(foo(a=!!xy, b=!!yz))
+```
+
+
+#### 2 The following two calls print the same, but are actually different:
+
+```{r}
+(a <- expr(mean(1:10)))
+#> mean(1:10)
+(b <- expr(mean(!!(1:10))))
+#> mean(1:10)
+identical(a, b)
+#> [1] FALSE
+```
+
+What is the difference and which is more natural?
+
+b is going to go ahead and evaluate 1:10, while a won't.  Why not use a?
+
+```{r}
+expr_print(a)
+
+expr_print(b)
+```
+
+## 19.5 Non-quoting
+
+Base R mostly selectively turns off quoting as needed, rather than unquoting.  This is called non-quoting.
+
+```{r}
+
+```
 
