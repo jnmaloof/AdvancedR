@@ -533,7 +533,7 @@ the values of symbols in the current environment</p>
 ## {
 ##     enexpr(expr)
 ## }
-## &lt;bytecode: 0x1151521d0&gt;
+## &lt;bytecode: 0x115799ef8&gt;
 ## &lt;environment: namespace:rlang&gt;</code></pre>
 </div>
 <div id="compare-and-contrast-the-following-two-functions.-can-you-predict-the-output-before-running-them" class="section level4">
@@ -741,8 +741,8 @@ foo(a = x + y, b = y + z)</code></pre>
 <pre><code>## (x + y)/(x + z)</code></pre>
 <pre class="r"><code>expr(-(!!xy)  ^ (!!xz))</code></pre>
 <pre><code>## -(x + y)^(x + z)</code></pre>
-<pre class="r"><code>expr((!!(xy)) + !!yz - !!xy) # how to get parentheses?</code></pre>
-<pre><code>## x + y + (y + z) - (x + y)</code></pre>
+<pre class="r"><code>expr(((!!xy)) + !!yz - !!xy) # how to get parentheses?</code></pre>
+<pre><code>## (x + y) + (y + z) - (x + y)</code></pre>
 <pre class="r"><code>expr(atan2(!!xy, !!yz))</code></pre>
 <pre><code>## atan2(x + y, y + z)</code></pre>
 <pre class="r"><code>expr(sum(!!xy, !!xy, !!yz))</code></pre>
@@ -851,7 +851,7 @@ between dots and list behaviour.</h4>
 ##     }
 ##     structure(as.integer(ans + 1L), levels = lvs, class = &quot;factor&quot;)
 ## }
-## &lt;bytecode: 0x1155272b8&gt;
+## &lt;bytecode: 0x11644cb38&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <pre class="r"><code>expand.grid</code></pre>
 <pre><code>## function (..., KEEP.OUT.ATTRS = TRUE, stringsAsFactors = TRUE) 
@@ -904,7 +904,7 @@ between dots and list behaviour.</h4>
 ##     rn &lt;- .set_row_names(as.integer(prod(d)))
 ##     structure(cargs, class = &quot;data.frame&quot;, row.names = rn)
 ## }
-## &lt;bytecode: 0x115703bb0&gt;
+## &lt;bytecode: 0x11660b938&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <pre class="r"><code>par</code></pre>
 <pre><code>## function (..., no.readonly = FALSE) 
@@ -933,7 +933,7 @@ between dots and list behaviour.</h4>
 ##         invisible(value)
 ##     else value
 ## }
-## &lt;bytecode: 0x103f5dd38&gt;
+## &lt;bytecode: 0x117da5b90&gt;
 ## &lt;environment: namespace:graphics&gt;</code></pre>
 <p>interaction checks to see if the first item in … is a list, and if so
 it uses that. expand.grid seems functionally equivalent</p>
@@ -987,12 +987,11 @@ linear(x, c(10, 5, -4))</code></pre>
   summands &lt;- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
   summands &lt;- c(val[[1]], summands)
 
-  reduce(summands, call2, &quot;+&quot;)
+  reduce(summands, call2, .fn=&quot;+&quot;)
 }
 
 linear(x, c(10, 5, -4))</code></pre>
-<pre><code>## Error in `fn()`:
-## ! Can&#39;t create call to non-callable object</code></pre>
+<pre><code>## 10 + (5 * x[[1L]]) + (-4 * x[[2L]])</code></pre>
 </div>
 <div id="re-implement-the-box-cox-transform-defined-below-using-unquoting-and-new_function" class="section level4">
 <h4>2. Re-implement the Box-Cox transform defined below using unquoting
@@ -1007,11 +1006,11 @@ and new_function():</h4>
 
 bc(0)</code></pre>
 <pre><code>## function(x) log(x)
-## &lt;environment: 0x12064fd48&gt;</code></pre>
+## &lt;environment: 0x115731de0&gt;</code></pre>
 <pre class="r"><code>bc(0.5)</code></pre>
 <pre><code>## function(x) (x ^ lambda - 1) / lambda
-## &lt;bytecode: 0x107484f98&gt;
-## &lt;environment: 0x120714ad8&gt;</code></pre>
+## &lt;bytecode: 0x1164754d8&gt;
+## &lt;environment: 0x1157e5018&gt;</code></pre>
 <pre class="r"><code>bc2 &lt;- function(lambda) {
   if (lambda == 0) {
     new_function(exprs(x=), expr(log(x) ))
@@ -1023,11 +1022,11 @@ bc(0)</code></pre>
 bc2(0)</code></pre>
 <pre><code>## function (x) 
 ## log(x)
-## &lt;environment: 0x110063620&gt;</code></pre>
+## &lt;environment: 0x1167d2a20&gt;</code></pre>
 <pre class="r"><code>bc2(0.5)</code></pre>
 <pre><code>## function (x) 
 ## (x^(0.5 - 1))/0.5
-## &lt;environment: 0x1043a03b8&gt;</code></pre>
+## &lt;environment: 0x12103ca58&gt;</code></pre>
 </div>
 <div id="re-implement-the-simple-compose-defined-below-using-quasiquotation-and-new_function" class="section level4">
 <h4>3 Re-implement the simple compose() defined below using
@@ -1038,17 +1037,22 @@ quasiquotation and new_function():</h4>
 
 compose(mean, median)</code></pre>
 <pre><code>## function(...) f(g(...))
-## &lt;environment: 0x1155cd248&gt;</code></pre>
+## &lt;environment: 0x11726e348&gt;</code></pre>
 <pre class="r"><code>compose2 &lt;- function(f, g) {
   f &lt;- enexpr(f)
   g &lt;- enexpr(g)
   new_function(exprs(...=), expr((!!f)((!!g)(...))))
 }
 
-compose2(mean, median)</code></pre>
-<pre><code>## function (...) 
-## mean(median(...))
-## &lt;environment: 0x11588c6d8&gt;</code></pre>
+sumabs &lt;- compose2(sum, abs)
+
+x &lt;- -5:5
+x</code></pre>
+<pre><code>##  [1] -5 -4 -3 -2 -1  0  1  2  3  4  5</code></pre>
+<pre class="r"><code>sum(x)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>sumabs(x)</code></pre>
+<pre><code>## [1] 30</code></pre>
 </div>
 </div>
 </div>

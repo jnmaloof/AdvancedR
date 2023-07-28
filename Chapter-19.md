@@ -345,7 +345,7 @@ expr
 ## {
 ##     enexpr(expr)
 ## }
-## <bytecode: 0x1151521d0>
+## <bytecode: 0x115799ef8>
 ## <environment: namespace:rlang>
 ```
 
@@ -732,11 +732,11 @@ expr(-(!!xy)  ^ (!!xz))
 ```
 
 ```r
-expr((!!(xy)) + !!yz - !!xy) # how to get parentheses?
+expr(((!!xy)) + !!yz - !!xy) # how to get parentheses?
 ```
 
 ```
-## x + y + (y + z) - (x + y)
+## (x + y) + (y + z) - (x + y)
 ```
 
 ```r
@@ -914,7 +914,7 @@ interaction
 ##     }
 ##     structure(as.integer(ans + 1L), levels = lvs, class = "factor")
 ## }
-## <bytecode: 0x1155272b8>
+## <bytecode: 0x11644cb38>
 ## <environment: namespace:base>
 ```
 
@@ -974,7 +974,7 @@ expand.grid
 ##     rn <- .set_row_names(as.integer(prod(d)))
 ##     structure(cargs, class = "data.frame", row.names = rn)
 ## }
-## <bytecode: 0x115703bb0>
+## <bytecode: 0x11660b938>
 ## <environment: namespace:base>
 ```
 
@@ -1009,7 +1009,7 @@ par
 ##         invisible(value)
 ##     else value
 ## }
-## <bytecode: 0x103f5dd38>
+## <bytecode: 0x117da5b90>
 ## <environment: namespace:graphics>
 ```
 
@@ -1082,15 +1082,14 @@ linear <- function(var, val) {
   summands <- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
   summands <- c(val[[1]], summands)
 
-  reduce(summands, call2, "+")
+  reduce(summands, call2, .fn="+")
 }
 
 linear(x, c(10, 5, -4))
 ```
 
 ```
-## Error in `fn()`:
-## ! Can't create call to non-callable object
+## 10 + (5 * x[[1L]]) + (-4 * x[[2L]])
 ```
 
 #### 2. Re-implement the Box-Cox transform defined below using unquoting and new_function():
@@ -1110,7 +1109,7 @@ bc(0)
 
 ```
 ## function(x) log(x)
-## <environment: 0x12064fd48>
+## <environment: 0x115731de0>
 ```
 
 ```r
@@ -1119,8 +1118,8 @@ bc(0.5)
 
 ```
 ## function(x) (x ^ lambda - 1) / lambda
-## <bytecode: 0x107484f98>
-## <environment: 0x120714ad8>
+## <bytecode: 0x1164754d8>
+## <environment: 0x1157e5018>
 ```
 
 
@@ -1139,7 +1138,7 @@ bc2(0)
 ```
 ## function (x) 
 ## log(x)
-## <environment: 0x110063620>
+## <environment: 0x1167d2a20>
 ```
 
 ```r
@@ -1149,7 +1148,7 @@ bc2(0.5)
 ```
 ## function (x) 
 ## (x^(0.5 - 1))/0.5
-## <environment: 0x1043a03b8>
+## <environment: 0x12103ca58>
 ```
 #### 3 Re-implement the simple compose() defined below using quasiquotation and new_function():
 
@@ -1164,7 +1163,7 @@ compose(mean, median)
 
 ```
 ## function(...) f(g(...))
-## <environment: 0x1155cd248>
+## <environment: 0x11726e348>
 ```
 
 
@@ -1176,12 +1175,29 @@ compose2 <- function(f, g) {
   new_function(exprs(...=), expr((!!f)((!!g)(...))))
 }
 
-compose2(mean, median)
+sumabs <- compose2(sum, abs)
+
+x <- -5:5
+x
 ```
 
 ```
-## function (...) 
-## mean(median(...))
-## <environment: 0x11588c6d8>
+##  [1] -5 -4 -3 -2 -1  0  1  2  3  4  5
+```
+
+```r
+sum(x)
+```
+
+```
+## [1] 0
+```
+
+```r
+sumabs(x)
+```
+
+```
+## [1] 30
 ```
 

@@ -398,7 +398,7 @@ expr(!!xy /!!xz)
 
 expr(-(!!xy)  ^ (!!xz))
 
-expr((!!(xy)) + !!yz - !!xy) # how to get parentheses?
+expr(((!!xy)) + !!yz - !!xy) # how to get parentheses?
 
 expr(atan2(!!xy, !!yz))
 
@@ -517,7 +517,7 @@ linear <- function(var, val) {
   summands <- map2(val[-1], coef_name, ~ expr((!!.x * !!.y)))
   summands <- c(val[[1]], summands)
 
-  reduce(summands, call2, "+")
+  reduce(summands, call2, .fn="+")
 }
 
 linear(x, c(10, 5, -4))
@@ -570,6 +570,13 @@ compose2 <- function(f, g) {
   new_function(exprs(...=), expr((!!f)((!!g)(...))))
 }
 
-compose2(mean, median)
+sumabs <- compose2(sum, abs)
+
+x <- -5:5
+x
+
+sum(x)
+
+sumabs(x)
 ```
 
