@@ -11,7 +11,34 @@ output:
 
 
 ```r
+library(tidyverse)
+```
+
+```
+## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.0     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.1     ✔ tibble    3.1.8
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors
+```
+
+```r
 library(rlang)
+```
+
+```
+## 
+## Attaching package: 'rlang'
+## 
+## The following objects are masked from 'package:purrr':
+## 
+##     %@%, flatten, flatten_chr, flatten_dbl, flatten_int, flatten_lgl,
+##     flatten_raw, invoke, splice
 ```
 
 
@@ -391,7 +418,7 @@ new_quosure(expr(x + y), env(x = 1, y = 10))
 ```
 ## <quosure>
 ## expr: ^x + y
-## env:  0x1458cdf38
+## env:  0x1209ee510
 ```
 
 Evaluate with `eval_tidy`
@@ -419,7 +446,7 @@ q1
 ```
 ## <quosure>
 ## expr: ^x
-## env:  0x1269342b0
+## env:  0x12142bb30
 ```
 
 ```r
@@ -440,7 +467,7 @@ q2
 ```
 ## <quosure>
 ## expr: ^x + (^x)
-## env:  0x126ad0588
+## env:  0x1215ec070
 ```
 
 ```r
@@ -461,7 +488,7 @@ q3
 ```
 ## <quosure>
 ## expr: ^x + (^x + (^x))
-## env:  0x126dc99a8
+## env:  0x121996940
 ```
 
 ```r
@@ -500,5 +527,317 @@ enenv(z)
 
 ```
 ## <environment: R_GlobalEnv>
+```
+
+## 20.4
+
+data masks
+
+a data fram argument provided to tidy_eval where variables are looked for.
+
+If neded, can specify .data$x and .env$x to be explicit about where variables should be looked for
+
+### Exercises
+
+#### 1. Why did I use a for loop in transform2() instead of map()? Consider `transform2(df, x = x * 2, x = x * 2).`
+
+Because map will create a list with 2 columns of the same name, and they will not be evaluated recursively (for map, both operations work on the original x, I think)
+
+#### 2. Compare subset2 and 3
+
+
+```r
+subset2 <- function(data, rows) {
+  rows <- enquo(rows)
+  rows_val <- eval_tidy(rows, data)
+  stopifnot(is.logical(rows_val))
+
+  data[rows_val, , drop = FALSE]
+}
+
+subset3 <- function(data, rows) {
+  rows <- enquo(rows)
+  eval_tidy(expr(data[!!rows, , drop = FALSE]), data = data)
+}
+
+df <- data.frame(x = 1:3)
+subset3(df, x == 1)
+```
+
+```
+##   x
+## 1 1
+```
+
+I would think that these would both work equally well.  subset2 is clearer coding and also will maybe give a better error message.  Also can get into trouble if the df has a column "data"
+
+#### 3. The following function implements the basics of dplyr::arrange(). Annotate each line with a comment explaining what it does. Can you explain why !!.na.last is strictly correct, but omitting the !! is unlikely to cause problems?
+
+
+```r
+arrange2 <- function(.df, ..., .na.last = TRUE) {
+  args <- enquos(...) ## get the ... expressions and quote them
+
+  order_call <- expr(order(!!!args, na.last = !!.na.last)) ## screate an expression that will call the function "order" with the arugments (which will be column names)
+
+  ord <- eval_tidy(order_call, .df) # now run the order call, using the data frame as the environment
+  stopifnot(length(ord) == nrow(.df)) # make sure nothing went wrong
+
+  .df[ord, , drop = FALSE] # actually reorder the df and return it
+}
+```
+
+!!.na.last will give the value of na.last as an argument in the expression, but without this it will be evaluated later and this should be ok becuase na.last will be in the calling environment.
+
+## 20.5
+
+#### 1. I’ve included an alternative implementation of threshold_var() below. What makes it different to the approach I used above? What makes it harder?
+
+
+```r
+threshold_var <- function(df, var, val) {
+  var <- ensym(var)
+  subset2(df, `$`(.data, !!var) >= !!val)
+}
+```
+
+
+Here we are using the inilne version of the `$` function, and that makes the code harder to read.
+
+## 20.6
+
+#### 1. Why does this function fail?
+
+
+```r
+lm3a <- function(formula, data) {
+  formula <- enexpr(formula)
+
+  lm_call <- expr(lm(!!formula, data = data))
+  eval(lm_call, caller_env())
+}
+lm3a(mpg ~ disp, mtcars)$call
+```
+
+It fails because `data` does not exist in `caller_env()`.  So we need to quote it and then unquote it in the call, as is done in the `lm3` given in the book
+
+#### 2. When model building, typically the response and data are relatively constant while you rapidly experiment with different predictors. Write a small wrapper that allows you to reduce duplication in the code below.
+
+
+```r
+lm(mpg ~ disp, data = mtcars)
+```
+
+```
+## 
+## Call:
+## lm(formula = mpg ~ disp, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp  
+##    29.59985     -0.04122
+```
+
+```r
+lm(mpg ~ I(1 / disp), data = mtcars)
+```
+
+```
+## 
+## Call:
+## lm(formula = mpg ~ I(1/disp), data = mtcars)
+## 
+## Coefficients:
+## (Intercept)    I(1/disp)  
+##       10.75      1557.67
+```
+
+```r
+lm(mpg ~ disp * cyl, data = mtcars)
+```
+
+```
+## 
+## Call:
+## lm(formula = mpg ~ disp * cyl, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp          cyl     disp:cyl  
+##    49.03721     -0.14553     -3.40524      0.01585
+```
+
+What is the idea?  give the formulas in ... and loop through them?
+
+A second approach would be to have one arugment for the response, and have the predictors in ...
+
+Start with idea one.
+
+
+```r
+lms_1 <- function(..., data, env=caller_env()) {
+  formulas <- enexprs(...)
+  
+  data <- enexpr(data)
+  
+  res <- list()
+  
+  for(i in seq_along(formulas)) {
+    lm_call <- expr(lm(!!formulas[[i]], data=!!data))
+    expr_print(lm_call)
+    res[[i]] <- eval(lm_call, env=env)
+    cat("----------------\n\n")
+  }
+  
+  res
+  
+}
+
+lms_1(mpg ~ disp, mpg ~ I(1/disp), mpg ~ disp * cyl, data=mtcars)
+```
+
+```
+## lm(mpg ~ disp, data = mtcars)
+## ----------------
+## 
+## lm(mpg ~ I(1 / disp), data = mtcars)
+## ----------------
+## 
+## lm(mpg ~ disp * cyl, data = mtcars)
+## ----------------
+```
+
+```
+## [[1]]
+## 
+## Call:
+## lm(formula = mpg ~ disp, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp  
+##    29.59985     -0.04122  
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = mpg ~ I(1/disp), data = mtcars)
+## 
+## Coefficients:
+## (Intercept)    I(1/disp)  
+##       10.75      1557.67  
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = mpg ~ disp * cyl, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp          cyl     disp:cyl  
+##    49.03721     -0.14553     -3.40524      0.01585
+```
+
+How about a list of predictors?
+
+
+```r
+lms_2 <- function(response, ..., data, env=caller_env()) {
+  response <- enexpr(response)
+  
+  predictors <- enexprs(...)
+  
+  data <- enexpr(data)
+  
+  res <- list()
+  
+  for(i in seq_along(predictors)) {
+    lm_call <- expr(lm(!!response ~ !!predictors[[i]], data=!!data))
+    expr_print(lm_call)
+    res[[i]] <- eval(lm_call, env=env)
+    cat("----------------\n\n")
+  }
+  
+  res
+  
+}
+
+lms_2(mpg, disp, I(1/disp), disp * cyl, data=mtcars)
+```
+
+```
+## lm(mpg ~ disp, data = mtcars)
+## ----------------
+## 
+## lm(mpg ~ I(1 / disp), data = mtcars)
+## ----------------
+## 
+## lm(mpg ~ disp * cyl, data = mtcars)
+## ----------------
+```
+
+```
+## [[1]]
+## 
+## Call:
+## lm(formula = mpg ~ disp, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp  
+##    29.59985     -0.04122  
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = mpg ~ I(1/disp), data = mtcars)
+## 
+## Coefficients:
+## (Intercept)    I(1/disp)  
+##       10.75      1557.67  
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = mpg ~ disp * cyl, data = mtcars)
+## 
+## Coefficients:
+## (Intercept)         disp          cyl     disp:cyl  
+##    49.03721     -0.14553     -3.40524      0.01585
+```
+
+#### 3. Another way to write resample_lm() would be to include the resample expression (data[sample(nrow(data), replace = TRUE), , drop = FALSE]) in the data argument. Implement that approach. What are the advantages? What are the disadvantages?
+
+advantage: user control.  disadvantage: user has to rewrite it if there df is not called "data".  Uglier.  lm output is uglier.
+
+
+```r
+resample_lm3 <- function(formula, data=data[sample(nrow(data), replace = TRUE), , drop = FALSE], env = caller_env()) {
+  formula <- enexpr(formula)
+  data = enexpr(data)
+  
+  lm_call <- expr(lm(!!formula, data = !!data))
+  expr_print(lm_call)
+  eval(lm_call, env)
+}
+
+df <- data.frame(x = 1:10, y = 5 + 3 * (1:10) + round(rnorm(10), 2))
+
+resample_lm3(y ~ x, data=df[sample(nrow(df), replace = TRUE), , drop = FALSE])
+```
+
+```
+## lm(y ~ x, data = df[sample(nrow(df), replace = TRUE), , drop = FALSE])
+```
+
+```
+## 
+## Call:
+## lm(formula = y ~ x, data = df[sample(nrow(df), replace = TRUE), 
+##     , drop = FALSE])
+## 
+## Coefficients:
+## (Intercept)            x  
+##       2.770        3.327
 ```
 
