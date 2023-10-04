@@ -308,4 +308,33 @@ cumminC(c(3:1, 2:0, 4:2))
 cummax(c(3:1, 2:0, 4:2))
 cummaxC(c(3:1, 2:0, 4:2))
 ```
+### diff
+
+```{Rcpp}
+# include <Rcpp.h>
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+NumericVector diffC(NumericVector x, int lag = 1) {
+  int n = x.size();
+  
+  NumericVector res(n-lag);
+  
+  for(int i = lag; i < n; ++i) {
+    res[i-lag] = x[i] - x[i-lag];
+  }
+  
+  return res;
+}
+```
+
+```{r}
+diff((1:10)^2)
+
+diffC((1:10)^2)
+
+diff((1:10)^2, 2)
+
+diffC((1:10)^2, 2)
+```
 
