@@ -288,8 +288,6 @@ Because map will create a list with 2 columns of the same name, and they will no
 
 ```{r}
 
-
-
 subset2 <- function(data, rows) {
   rows <- enquo(rows)
   rows_val <- eval_tidy(rows, data)
@@ -315,7 +313,7 @@ I would think that these would both work equally well.  subset2 is clearer codin
 arrange2 <- function(.df, ..., .na.last = TRUE) {
   args <- enquos(...) ## get the ... expressions and quote them
 
-  order_call <- expr(order(!!!args, na.last = !!.na.last)) ## screate an expression that will call the function "order" with the arugments (which will be column names)
+  order_call <- expr(order(!!!args, na.last = !!.na.last)) ## create an expression that will call the function "order" with the arugments (which will be column names)
 
   ord <- eval_tidy(order_call, .df) # now run the order call, using the data frame as the environment
   stopifnot(length(ord) == nrow(.df)) # make sure nothing went wrong
@@ -338,7 +336,7 @@ threshold_var <- function(df, var, val) {
 ```
 
 
-Here we are using the inilne version of the `$` function, and that makes the code harder to read.
+Here we are using the inline version of the `$` function, and that makes the code harder to read.
 
 ## 20.6
 

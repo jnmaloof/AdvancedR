@@ -1,0 +1,102 @@
+---
+title: "Alicia"
+author: "Julin Maloof"
+date: "2023-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+And here is code for generating a test dataset in the format of my real dataset (the merging of separate data frames is to mimic the process I need to follow for my data):
+
+```{r}
+X1 <- data.frame('pos.id' = c("chr1a1", "chr1a2", "chr2a1", "chr2a2", "chr3a1", "chr1b2", "chr3c2", "chr5d1"), 'X1' = c(1, 0, .5, 1, 0, .5, 1, 1))
+X2 <- data.frame('pos.id' = c("chr1a1", "chr2a2", "chr3a1", "chr4a2", "chr5a1", "chr5d1", "chr6c2", "chr6d1"), 'X2' = c(1, 0, .5, 1, 0, .5, .5, 1))
+X3 <- data.frame('pos.id' = c("chr1a1", "chr1a8", "chr2a7", "chr2a6", "chr3a4", "chr1b3", "chr6c2", "chr5d1"), 'X3' = c(1, 0, .5, 1, 0, .5, 1, 1))
+X4 <- data.frame('pos.id' = c("chr1a1", "chr1a2", "chr3a1", "chr4a2", "chr3a4", "chr5d1", "chr6c2", "chr6d2"), 'X4' = c(1, 0, .5, 1, 0, .5, 1, 0))
+X5 <- data.frame('pos.id' = c("chr1a1", "chr1a2", "chr2a2", "chr2a3", "chr3a1", "chr5b3", "chr6c2", "chr6d2"), 'X5' = c(1, 0, .5, 1, 0, .5, 1, 1))
+X6 <- data.frame('pos.id' = c("chr1a1", "chr1a2", "chr2a1", "chr3a2", "chr3a8", "chr4b2", "chr5c2", "chr6d2"), 'X6' = c(1, 0, .5, 1, 0, .5, 1, 0))
+dflist <- list(X1, X2, X3, X4, X5, X6)
+allcpg <- dflist %>% reduce(full_join, by='pos.id')
+#rm(dflist)
+allcpg <- t(allcpg)
+head(allcpg[,1:10])
+```
+
+
+Here is my code for filtering my data. The idea is to first filter columns based on number of NAs and then create a list of row names based on number of NAs:
+```{r}
+allcpg2 <- data.frame(row.names = c("pos.id","X1", "X2", "X3", "X4", "X5", "X6"))
+j <- 0
+for (i in 1:length(allcpg[1,])){
+  if (sum(is.na(allcpg[,i])) < 3){
+    allcpg2 <- cbind(allcpg2, allcpg[,i])
+    j <- j + 1
+  }
+}
+colnames(allcpg2) <- as.character(allcpg2[1,])
+allcpg2 <- allcpg2[-1,]
+j
+```
+
+
+```{r}
+# identify max number of sites in a sample, aka max number of non-NA entries in a row
+namax <- max(apply(allcpg2, MARGIN = 1, FUN = function(x) sum(is.na(x))))
+namin <- min(apply(allcpg2, MARGIN = 1, FUN = function(x) sum(is.na(x))))
+maxsites <- length(allcpg2[1,]) - namin
+# calculate 3% of the max
+threshold <- maxsites*.5 # temporarily changed the percentage for the test dataset
+# identify samples that have less than 3% max non-NA entries
+filtersamples <- function(x){
+  sites <- length(allcpg2[1,]) - sum(is.na(x))
+  if (sites < threshold){
+    x
+  }
+}
+sitelist <- apply(allcpg2, MARGIN = 1, FUN = filtersamples)
+sitelist <- sitelist %>% discard(is.null)
+sitelist <- names(sitelist)
+```
+
+## JM tidy
+```{r}
+library(tidyverse)
+```
+
+
+Create allcpg but keep it numeric and with column names
+```{r}
+allcpg_jm <- dflist %>% reduce(full_join, by='pos.id') %>%
+  column_to_rownames(var="pos.id") %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var="sample_ID")
+  
+allcpg_jm[,1:5]
+allcpg[,1:5]
+```
+
+Filter to keep columns with less than 3 NAs
+```{r}
+allcpg2_jm <- allcpg_jm %>%
+  select(where(~ sum(is.na(.x)) < 3))
+
+allcpg2_jm
+allcpg2
+```
+Calculate maxsites and then threshold
+```{r}
+sitelist_jm <- allcpg2_jm %>%
+  rowwise() %>%
+  mutate(n.sites=sum(!is.na(c_across(starts_with("chr"))))) %>%
+  ungroup() %>%
+  filter(n.sites < max(n.sites)*.5) %>%
+  pull(sample_ID)
+
+sitelist_jm
+sitelist
+```
+

@@ -1,0 +1,82 @@
+---
+title: "Chapter 23"
+author: "Julin Maloof"
+date: "2023-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(profvis)
+library(bench)
+```
+```{r}
+f <- function() {
+  pause(0.1)
+  g()
+  h()
+}
+g <- function() {
+  pause(0.1)
+  h()
+}
+h <- function() {
+  pause(0.1)
+}
+```
+
+```{r}
+tmp <- tempfile()
+Rprof(tmp, interval = 0.01)
+f()
+Rprof(NULL)
+writeLines(readLines(tmp))
+#> sample.interval=100000
+#> "pause" "g" "f" 
+#> "pause" "h" "g" "f" 
+#> "pause" "h" "f" 
+```
+
+```{r}
+f <- function(n = 1e5) {
+  x <- rep(1, n)
+  rm(x)
+}
+```
+
+```{r}
+#profvis::profvis({f()}, torture = TRUE)
+```
+
+```{r}
+x <- runif(100)
+(lb <- bench::mark(
+  sqrt(x),
+  x ^ 0.5
+))
+
+```
+
+```{r}
+plot(lb)
+```
+```{r}
+n <- 1e6
+system.time(for (i in 1:n) sqrt(x)) / n
+system.time(for (i in 1:n) x ^ 0.5) / n
+```
+median vs mean
+
+```{r}
+
+results <- bench::mark(
+  x ^ (1 / 2),
+  exp(log(x) / 2)
+)
+
+results
+```
+

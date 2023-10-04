@@ -1,0 +1,311 @@
+---
+title: "Chapter 25"
+author: "Julin Maloof"
+date: "2023-10-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Rcpp)
+```
+
+# 25.2 Getting STarted with C++
+
+use cppFunction() to write a C++ functin in R:
+
+```{r}
+cppFunction('int add(int x, int y, int z) {
+  int sum = x + y + z;
+  return sum;
+}')
+# add works like a regular R function
+add
+#> function (x, y, z) 
+#> .Call(<pointer: 0x107536a00>, x, y, z)
+add(1, 2, 3)
+#> [1] 6
+```
+
+
+
+## 25.2.1 No inputs, scalara output
+
+```{r}
+#R
+one <- function() 1L
+one()
+one
+
+#Cpp
+cppFunction('int one() {
+  return 1;
+}')
+one()
+one
+```
+
+## 25.2.2 Scalar input, scalar output
+
+```{r}
+signR <- function(x) {
+  if (x > 0) {
+    1
+  } else if (x == 0) {
+    0
+  } else {
+    -1
+  }
+}
+
+cppFunction('int signC(int x) {
+  if (x > 0) {
+    return 1;
+  } else if (x == 0) {
+    return 0;
+  } else {
+    return -1;
+  }
+}')
+```
+
+## 25.2.3 Vector inpur, scalar output
+
+```{r}
+sumR <- function(x) {
+  total <- 0
+  for (i in seq_along(x)) {
+    total <- total + x[i]
+  }
+  total
+}
+
+cppFunction('double sumC(NumericVector x) {
+  int n = x.size();
+  double total = 0;
+  for(int i = 0; i < n; ++i) {
+    total += x[i];
+  }
+  return total;
+}')
+
+```
+
+```{r}
+x <- rnorm(10e6)
+
+bench::mark(sumR(x),
+            sum(x),
+            sumC(x))
+```
+
+
+## 25.2.5 Vector input, Vector output
+
+```{r}
+pdistR <- function(x, ys) {
+  sqrt((x - ys) ^ 2)
+}
+
+cppFunction('NumericVector pdistC(double x, NumericVector ys) {
+  int n = ys.size();
+  NumericVector out(n);
+
+  for(int i = 0; i < n; ++i) {
+    out[i] = sqrt(pow(ys[i] - x, 2.0));
+  }
+  return out;
+}')
+
+y <- runif(1e6)
+bench::mark(
+  pdistR(0.5, y),
+  pdistC(0.5, y)
+)[1:6]
+#> # A tibble: 2 x 6
+#>   expression          min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>     <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 pdistR(0.5, y)   6.31ms   6.75ms      145.    7.63MB     72.4
+#> 2 pdistC(0.5, y)   2.31ms   2.77ms      380.    7.63MB    192.
+```
+
+## 25.2.6 Exercises
+### 1 With the basics of C++ in hand, it’s now a great time to practice by reading and writing some simple C++ functions. For each of the following functions, read the code and figure out what the corresponding base R function is. You might not understand every part of the code yet, but you should be able to figure out the basics of what the function does.
+
+* f1: mean()
+* f2: cumsum()
+* f3: any()
+* f4: ???
+* f5: pmin()
+
+
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double f1(NumericVector x) {
+  int n = x.size();
+  double y = 0;
+
+  for(int i = 0; i < n; ++i) {
+    y += x[i] / n;
+  }
+  return y;
+}
+
+NumericVector f2(NumericVector x) {
+  int n = x.size();
+  NumericVector out(n);
+
+  out[0] = x[0];
+  for(int i = 1; i < n; ++i) {
+    out[i] = out[i - 1] + x[i];
+  }
+  return out;
+}
+
+bool f3(LogicalVector x) {
+  int n = x.size();
+
+  for(int i = 0; i < n; ++i) {
+    if (x[i]) return true;
+  }
+  return false;
+}
+
+int f4(Function pred, List x) {
+  int n = x.size();
+
+  for(int i = 0; i < n; ++i) {
+    LogicalVector res = pred(x[i]);
+    if (res[0]) return i + 1;
+  }
+  return 0;
+}
+
+NumericVector f5(NumericVector x, NumericVector y) {
+  int n = std::max(x.size(), y.size());
+  NumericVector x1 = rep_len(x, n);
+  NumericVector y1 = rep_len(y, n);
+
+  NumericVector out(n);
+
+  for (int i = 0; i < n; ++i) {
+    out[i] = std::min(x1[i], y1[i]);
+  }
+
+  return out;
+}
+```
+
+### To practice your function writing skills, convert the following functions into C++. For now, assume the inputs have no missing values.
+
+all().
+
+cumprod(), cummin(), cummax().
+
+diff(). Start by assuming lag 1, and then generalise for lag n.
+
+range().
+
+var(). Read about the approaches you can take on Wikipedia. Whenever implementing a numerical algorithm, it’s always good to check what is already known about the problem.
+
+#### all
+```{Rcpp}
+# include <Rcpp.h>
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+bool allC(LogicalVector x) {
+  int n = x.size();
+  
+  for (int i = 0; i < n; ++i) {
+    if(!x[i]) return false;
+  }
+  return true;
+}
+```
+
+```{r}
+all(c(T,T,T))
+all(c(T,T,F,T))
+allC(c(T,T,T))
+allC(c(T,T,F,T))
+
+```
+#### cumX
+
+```{Rcpp}
+# include <Rcpp.h>
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+NumericVector cumprodC(NumericVector x) {
+  int n = x.size();
+  
+  NumericVector res(n);
+  
+  res[0] = x[0];
+  
+  for(int i=1; i < n; ++i) {
+    res[i] = x[i]*res[i-1];
+  }
+  
+  return res;
+}
+
+//[[Rcpp::export]]
+NumericVector cumminC(NumericVector x) {
+  int n = x.size();
+  
+  NumericVector res(n);
+  
+  res[0] = x[0];
+  
+  for(int i=1; i < n; ++i) {
+    if (x[i] < res[i-1]) 
+      res[i] = x[i];
+    else
+      res[i] = res[i-1];
+      }
+  
+  return res;
+}
+
+//[[Rcpp::export]]
+NumericVector cummaxC(NumericVector x) {
+  int n = x.size();
+  
+  NumericVector res(n);
+  
+  res[0] = x[0];
+  
+  for(int i=1; i < n; ++i) {
+    if (x[i] > res[i-1]) 
+      res[i] = x[i];
+    else
+      res[i] = res[i-1];
+      }
+  
+  return res;
+}
+
+```
+
+```{r}
+cumprod(2:10)
+cumprodC(2:10)
+
+cummin(c(3:1, 2:0, 4:2))
+cumminC(c(3:1, 2:0, 4:2))
+
+
+cummax(c(3:1, 2:0, 4:2))
+cummaxC(c(3:1, 2:0, 4:2))
+```
+

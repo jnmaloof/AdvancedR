@@ -1,0 +1,58 @@
+---
+title: "Chapter 24"
+author: "Julin Maloof"
+date: "2023-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(bench)
+library(tidyverse)
+```
+
+## 24.3.1 Exercises
+
+### 1. What are faster alternatives to lm()? Which are specifically designed to work with larger datasets?
+lsfit
+lm.fit
+fastlm
+.lm.fit
+speedlm
+
+### 2. What package implements a version of match() that’s faster for repeated lookups? How much faster is it?
+
+fastmatch
+
+### 4. rolling mean
+
+rollmean from zoo
+
+### 5. optim alternatives
+
+optimParallel
+
+```{r}
+x1 <- rnorm(10000)
+w1 <- runif(10000)
+x2 <- rnorm(10000000)
+w2 <- runif(10000000)
+cp1 <- function(x,w) crossprod(x,w)[[1]]
+cp2 <- function(x,w) sum(x*w)
+
+r1 <- mark(crossprod10K=cp1(x1,w1),
+  sum10K=cp2(x1,w1)) %>%
+  mutate(expression=names(expression))
+
+r2 <-mark(
+  crossprod10M=cp1(x2,w2),
+  sum10M=cp2(x2,w2)) %>%
+  mutate(expression=names(expression))
+
+bind_rows(r1,r2)
+```
+
+
