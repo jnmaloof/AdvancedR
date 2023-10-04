@@ -337,4 +337,63 @@ diff((1:10)^2, 2)
 
 diffC((1:10)^2, 2)
 ```
+#### range
+```{Rcpp}
+# include <Rcpp.h>
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+NumericVector rangeC(NumericVector x){
+  int n = x.size();
+  NumericVector result(2);
+  
+  result[0] = result[1] = x[0];
+  
+  for(int i = 1; i < n; ++i){
+    result[0] = std::min(result[0], x[i]);
+    result[1] = std::max(result[1], x[i]);
+  }
+
+  return(result);
+}
+```
+
+```{r}
+x <- sample(1:20)
+x
+range(x)
+rangeC(x)
+```
+
+#### var
+
+Okay wikipedia says that some pitfalls (e.g. cancellation) can be avoided by shifting the numbers to be centered around their mean, (or even anything in teh range) so I will try that.  There are more exotic algorithms but this at least seems simple.
+
+```{Rcpp}
+# include <Rcpp.h>
+using namespace Rcpp;
+
+//[[Rcpp::export]]
+double varC(NumericVector x){
+  int n = x.size();
+  double K = x[0];
+  double sumx = 0;
+  double sumsqx = 0;
+  
+  for(int i = 0; i < n; ++i) {
+    sumx += (x[i] - K);
+    sumsqx += pow(x[i] -K, 2);
+  }
+  
+  double var = (sumsqx - pow(sumx, 2)/n) / (n-1);
+  
+  return(var);
+}
+```
+
+```{r}
+x <- rnorm(100)
+var(x)
+varC(x)
+```
 
