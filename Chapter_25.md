@@ -7,11 +7,10 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
+
+
+```r
 library(Rcpp)
 ```
 
@@ -19,16 +18,32 @@ library(Rcpp)
 
 use cppFunction() to write a C++ function in R:
 
-```{r}
+
+```r
 cppFunction('int add(int x, int y, int z) {
   int sum = x + y + z;
   return sum;
 }')
 # add works like a regular R function
 add
+```
+
+```
+## function (x, y, z) 
+## .Call(<pointer: 0x1053b5580>, x, y, z)
+```
+
+```r
 #> function (x, y, z) 
 #> .Call(<pointer: 0x107536a00>, x, y, z)
 add(1, 2, 3)
+```
+
+```
+## [1] 6
+```
+
+```r
 #> [1] 6
 ```
 
@@ -36,23 +51,50 @@ add(1, 2, 3)
 
 ## 25.2.1 No inputs, scalara output
 
-```{r}
+
+```r
 #R
 one <- function() 1L
 one()
-one
+```
 
+```
+## [1] 1
+```
+
+```r
+one
+```
+
+```
+## function() 1L
+```
+
+```r
 #Cpp
 cppFunction('int one() {
   return 1;
 }')
 one()
+```
+
+```
+## [1] 1
+```
+
+```r
 one
+```
+
+```
+## function () 
+## .Call(<pointer: 0x1053d4740>)
 ```
 
 ## 25.2.2 Scalar input, scalar output
 
-```{r}
+
+```r
 signR <- function(x) {
   if (x > 0) {
     1
@@ -76,7 +118,8 @@ cppFunction('int signC(int x) {
 
 ## 25.2.3 Vector inpur, scalar output
 
-```{r}
+
+```r
 sumR <- function(x) {
   total <- 0
   for (i in seq_along(x)) {
@@ -93,10 +136,10 @@ cppFunction('double sumC(NumericVector x) {
   }
   return total;
 }')
-
 ```
 
-```{r}
+
+```r
 x <- rnorm(10e6)
 
 bench::mark(sumR(x),
@@ -104,10 +147,20 @@ bench::mark(sumR(x),
             sumC(x))
 ```
 
+```
+## # A tibble: 3 × 6
+##   expression      min   median `itr/sec` mem_alloc `gc/sec`
+##   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+## 1 sumR(x)    136.96ms 137.38ms      7.27    3.98MB        0
+## 2 sum(x)       14.1ms  14.17ms     70.3         0B        0
+## 3 sumC(x)      8.44ms   8.51ms    117.      2.49KB        0
+```
+
 
 ## 25.2.5 Vector input, Vector output
 
-```{r}
+
+```r
 pdistR <- function(x, ys) {
   sqrt((x - ys) ^ 2)
 }
@@ -127,6 +180,17 @@ bench::mark(
   pdistR(0.5, y),
   pdistC(0.5, y)
 )[1:6]
+```
+
+```
+## # A tibble: 2 × 6
+##   expression          min   median `itr/sec` mem_alloc `gc/sec`
+##   <bch:expr>     <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+## 1 pdistR(0.5, y)   1.92ms   1.99ms      496.    7.63MB     125.
+## 2 pdistC(0.5, y) 360.19µs 558.79µs     1723.    7.63MB     233.
+```
+
+```r
 #> # A tibble: 2 x 6
 #>   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>     <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
@@ -145,7 +209,8 @@ bench::mark(
 
 
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -218,7 +283,8 @@ range().
 var(). Read about the approaches you can take on Wikipedia. Whenever implementing a numerical algorithm, it’s always good to check what is already known about the problem.
 
 #### all
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -233,16 +299,42 @@ bool allC(LogicalVector x) {
 }
 ```
 
-```{r}
-all(c(T,T,T))
-all(c(T,T,F,T))
-allC(c(T,T,T))
-allC(c(T,T,F,T))
 
+```r
+all(c(T,T,T))
+```
+
+```
+## [1] TRUE
+```
+
+```r
+all(c(T,T,F,T))
+```
+
+```
+## [1] FALSE
+```
+
+```r
+allC(c(T,T,T))
+```
+
+```
+## [1] TRUE
+```
+
+```r
+allC(c(T,T,F,T))
+```
+
+```
+## [1] FALSE
 ```
 #### cumX
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -299,20 +391,58 @@ NumericVector cummaxC(NumericVector x) {
 
 ```
 
-```{r}
+
+```r
 cumprod(2:10)
+```
+
+```
+## [1]       2       6      24     120     720    5040   40320  362880 3628800
+```
+
+```r
 cumprodC(2:10)
+```
 
+```
+## [1]       2       6      24     120     720    5040   40320  362880 3628800
+```
+
+```r
 cummin(c(3:1, 2:0, 4:2))
+```
+
+```
+## [1] 3 2 1 1 1 0 0 0 0
+```
+
+```r
 cumminC(c(3:1, 2:0, 4:2))
+```
 
+```
+## [1] 3 2 1 1 1 0 0 0 0
+```
 
+```r
 cummax(c(3:1, 2:0, 4:2))
+```
+
+```
+## [1] 3 3 3 3 3 3 4 4 4
+```
+
+```r
 cummaxC(c(3:1, 2:0, 4:2))
+```
+
+```
+## [1] 3 3 3 3 3 3 4 4 4
 ```
 ### diff
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -330,17 +460,41 @@ NumericVector diffC(NumericVector x, int lag = 1) {
 }
 ```
 
-```{r}
+
+```r
 diff((1:10)^2)
+```
 
+```
+## [1]  3  5  7  9 11 13 15 17 19
+```
+
+```r
 diffC((1:10)^2)
+```
 
+```
+## [1]  3  5  7  9 11 13 15 17 19
+```
+
+```r
 diff((1:10)^2, 2)
+```
 
+```
+## [1]  8 12 16 20 24 28 32 36
+```
+
+```r
 diffC((1:10)^2, 2)
 ```
+
+```
+## [1]  8 12 16 20 24 28 32 36
+```
 #### range
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -360,18 +514,38 @@ NumericVector rangeC(NumericVector x){
 }
 ```
 
-```{r}
+
+```r
 x <- sample(1:20)
 x
+```
+
+```
+##  [1]  2 12 11 20  9 10 14  7  3 19 16 18  6  5 15  4 13 17  8  1
+```
+
+```r
 range(x)
+```
+
+```
+## [1]  1 20
+```
+
+```r
 rangeC(x)
+```
+
+```
+## [1]  1 20
 ```
 
 #### var
 
 Okay wikipedia says that some pitfalls (e.g. cancellation) can be avoided by shifting the numbers to be centered around their mean, (or even anything in teh range) so I will try that.  There are more exotic algorithms but this at least seems simple.
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -393,10 +567,22 @@ double varC(NumericVector x){
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(100)
 var(x)
+```
+
+```
+## [1] 1.074365
+```
+
+```r
 varC(x)
+```
+
+```
+## [1] 1.074365
 ```
 
 # 25.3 Other Classes
@@ -405,7 +591,8 @@ varC(x)
 A bunch of other classes.  The most important are Lists and DataFrames.  These are often most useful for output, since they can contain arbitraty classes on input.  But if the structure is known it can be used as input.  For example, lm
 
 Function to extract mean percentage error
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -426,9 +613,17 @@ double mpe(List mod) {
 ```
 
 
-```{r}
+
+```r
 mod <- lm(mpg ~ wt, data = mtcars)
 mpe(mod)
+```
+
+```
+## [1] -0.01541615
+```
+
+```r
 #> [1] -0.0154
 ```
 
@@ -436,7 +631,8 @@ mpe(mod)
 
 Can pass an R function to C++ so that it can be called from your C++ code.  Because we don't know what it will return, the return class is "RObject"
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -446,10 +642,25 @@ RObject callWithOne(Function f) {
 }
 ```
 
-```{r}
+
+```r
 callWithOne(function(x) x + 1)
+```
+
+```
+## [1] 2
+```
+
+```r
 #> [1] 2
 callWithOne(paste)
+```
+
+```
+## [1] "1"
+```
+
+```r
 #> [1] "1"
 ```
 
@@ -460,7 +671,8 @@ If you need to pass names arguments to an R function from C++, the syntax is `f(
 
 See below for setting names and attributes
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -478,7 +690,8 @@ NumericVector attribs() {
 
 But what if you don't use ::create?
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -493,8 +706,18 @@ NumericVector attribs2(NumericVector x) {
 }
 ```
 
-```{r}
+
+```r
 attribs2(4:6)
+```
+
+```
+## a b c 
+## 4 5 6 
+## attr(,"my-attr")
+## [1] "my-value"
+## attr(,"class")
+## [1] "my-class"
 ```
 works
 
@@ -504,7 +727,8 @@ Need to know how missing values work in scalars and vectors
 
 ## 25.4.1 Scalars
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -519,8 +743,23 @@ List scalar_missings() {
 }
 ```
 
-```{r}
+
+```r
 scalar_missings()
+```
+
+```
+## [[1]]
+## [1] NA
+## 
+## [[2]]
+## [1] NA
+## 
+## [[3]]
+## [1] TRUE
+## 
+## [[4]]
+## [1] NA
 ```
 Whoa, look out for the boolean...
 
@@ -530,8 +769,13 @@ Other wierdness
 
 C++ stores an NA as the smallest integer, so if you do an operation on it, then the value can change.
 
-```{r}
+
+```r
 evalCpp('NA_INTEGER + 1')
+```
+
+```
+## [1] -2147483647
 ```
 
 **yikes**
@@ -542,37 +786,114 @@ Solution: use an integer vector of length 1 or be very careful!
 
 somewhat better:
 
-```{r}
+
+```r
 evalCpp("NAN == 1")
+```
+
+```
+## [1] FALSE
+```
+
+```r
 #> [1] FALSE
 evalCpp("NAN < 1")
+```
+
+```
+## [1] FALSE
+```
+
+```r
 #> [1] FALSE
 evalCpp("NAN > 1")
+```
+
+```
+## [1] FALSE
+```
+
+```r
 #> [1] FALSE
 evalCpp("NAN == NAN")
+```
+
+```
+## [1] FALSE
+```
+
+```r
 #> [1] FALSE
 evalCpp("NAN + 1")
 ```
 
+```
+## [1] NaN
+```
+
 However...
 
-```{r}
+
+```r
 evalCpp("NAN && TRUE")
+```
+
+```
+## [1] TRUE
+```
+
+```r
 #> [1] TRUE
 evalCpp("NAN || FALSE")
+```
+
+```
+## [1] TRUE
+```
+
+```r
 #> [1] TRUE
 ```
 
 But math is OK
 
-```{r}
+
+```r
 evalCpp("NAN + 1")
+```
+
+```
+## [1] NaN
+```
+
+```r
 #> [1] NaN
 evalCpp("NAN - 1")
+```
+
+```
+## [1] NaN
+```
+
+```r
 #> [1] NaN
 evalCpp("NAN / 1")
+```
+
+```
+## [1] NaN
+```
+
+```r
 #> [1] NaN
 evalCpp("NAN * 1")
+```
+
+```
+## [1] NaN
+```
+
+```r
 #> [1] NaN
 ```
 
@@ -586,7 +907,8 @@ C++ only has true and false, no NA.  `int` however can have true, false, or NA
 
 With vectors, you need to use a missing value specific to the type of vector, NA_REAL, NA_INTEGER, NA_LOGICAL, NA_STRING:
 
-```{Rcpp}
+
+```cpp
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -601,16 +923,25 @@ List missing_sampler() {
 }
 ```
 
-```{r}
-str(missing_sampler())
 
+```r
+str(missing_sampler())
+```
+
+```
+## List of 4
+##  $ : num NA
+##  $ : int NA
+##  $ : logi NA
+##  $ : chr NA
 ```
 
 ## 25.4.5 Exercises
 
 ### 1 Rewrite any of the functions from the first exercise of Section 25.2.6 to deal with missing values. If na.rm is true, ignore the missing values. If na.rm is false, return a missing value if the input contains any missing values. Some good functions to practice with are min(), max(), range(), mean(), and var().
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -632,23 +963,69 @@ double minC(NumericVector x, bool na_rm = false) {
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(100)
 min(x)
+```
+
+```
+## [1] -2.517992
+```
+
+```r
 minC(x)
+```
+
+```
+## [1] -2.517992
+```
+
+```r
 minC(x, TRUE)
 ```
 
-```{r}
+```
+## [1] -2.517992
+```
+
+
+```r
 x[50] <- NA
 min(x)
+```
+
+```
+## [1] NA
+```
+
+```r
 min(x, na.rm = TRUE)
+```
+
+```
+## [1] -2.517992
+```
+
+```r
 minC(x)
+```
+
+```
+## [1] NA
+```
+
+```r
 minC(x, na_rm = TRUE)
+```
+
+```
+## [1] -2.517992
 ```
 #### Range
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -680,15 +1057,55 @@ NumericVector rangeC(NumericVector x, bool na_rm = false){
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(100)
 range(x)
+```
+
+```
+## [1] -1.842712  3.291668
+```
+
+```r
 rangeC(x)
+```
+
+```
+## [1] -1.842712  3.291668
+```
+
+```r
 x[50] <- NA
 range(x)
+```
+
+```
+## [1] NA NA
+```
+
+```r
 rangeC(x)
+```
+
+```
+## [1] NA NA
+```
+
+```r
 range(x, na.rm=TRUE)
+```
+
+```
+## [1] -1.842712  3.291668
+```
+
+```r
 rangeC(x, na_rm = TRUE)
+```
+
+```
+## [1] -1.842712  3.291668
 ```
 
 
@@ -696,7 +1113,8 @@ rangeC(x, na_rm = TRUE)
 
 we could either run through the vector twice, first to detect/discard NAs and then compute the mean, or we could run through it once, keeping a separate counter.  Second way seems better.
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -720,19 +1138,60 @@ double meanC(NumericVector x, bool na_rm = false){
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(100)
 mean(x)
+```
+
+```
+## [1] -0.0636123
+```
+
+```r
 meanC(x)
+```
+
+```
+## [1] -0.0636123
+```
+
+```r
 x[30] <- NaN
 mean(x)
+```
+
+```
+## [1] NaN
+```
+
+```r
 meanC(x)
+```
+
+```
+## [1] NA
+```
+
+```r
 mean(x, na.rm = TRUE)
+```
+
+```
+## [1] -0.04955349
+```
+
+```r
 meanC(x, na_rm = TRUE)
+```
+
+```
+## [1] -0.04955349
 ```
 Alternate, using na_omit
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -755,15 +1214,55 @@ double meanC2(NumericVector x, bool na_rm = false){
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(100)
 mean(x)
+```
+
+```
+## [1] 0.01121501
+```
+
+```r
 meanC2(x)
+```
+
+```
+## [1] 0.01121501
+```
+
+```r
 x[30] <- NaN
 mean(x)
+```
+
+```
+## [1] NaN
+```
+
+```r
 meanC2(x)
+```
+
+```
+## [1] NA
+```
+
+```r
 mean(x, na.rm = TRUE)
+```
+
+```
+## [1] -0.0001017236
+```
+
+```r
 meanC2(x, na_rm = TRUE)
+```
+
+```
+## [1] -0.0001017236
 ```
 ### 2. Rewrite cumsum() and diff() so they can handle missing values. Note that these functions have slightly more complicated behaviour.
 
@@ -771,7 +1270,8 @@ meanC2(x, na_rm = TRUE)
 
 From `cumsum()` help file: _An NA value in x causes the corresponding and following elements of the return value to be NA, as does integer overflow in cumsum (with a warning)._
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -799,17 +1299,35 @@ NumericVector cumsumC(NumericVector x) {
 ```
 
 
-```{r}
+
+```r
 x <- rnorm(20, 10)
 x[15] <- NA
 cumsum(x)
-cumsumC(x)
+```
 
+```
+##  [1]   9.032548  19.145673  29.902298  39.101266  49.692950  58.811062
+##  [7]  69.155170  80.905577  89.463995 100.019770 111.590377 122.712648
+## [13] 132.591415 141.528664         NA         NA         NA         NA
+## [19]         NA         NA
+```
+
+```r
+cumsumC(x)
+```
+
+```
+##  [1]   9.032548  19.145673  29.902298  39.101266  49.692950  58.811062
+##  [7]  69.155170  80.905577  89.463995 100.019770 111.590377 122.712648
+## [13] 132.591415 141.528664         NA         NA         NA         NA
+## [19]         NA         NA
 ```
 
 ### diff
 
-```{Rcpp}
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -820,11 +1338,17 @@ NumericVector test() {
 }
 ```
 
-```{r}
+
+```r
 test()
 ```
 
-```{Rcpp}
+```
+## [1]  6 10
+```
+
+
+```cpp
 # include <Rcpp.h>
 using namespace Rcpp;
 
@@ -846,10 +1370,28 @@ NumericVector diffC(NumericVector x, int lag = 1) {
 }
 ```
 
-```{r}
+
+```r
 x <- rnorm(20, 10)
 x[15] <- NA
 diff(x)
+```
+
+```
+##  [1]  0.7330773 -0.7557204 -1.7216703  0.2949422  0.5100427  0.3153265
+##  [7] -1.4066663  0.7686268 -0.8292127  3.3512770 -1.7563712 -1.0250924
+## [13]  1.7486029         NA         NA -0.3221163  1.5150344 -0.9226099
+## [19]  3.2607937
+```
+
+```r
 diffC(x)
+```
+
+```
+##  [1]  0.7330773 -0.7557204 -1.7216703  0.2949422  0.5100427  0.3153265
+##  [7] -1.4066663  0.7686268 -0.8292127  3.3512770 -1.7563712 -1.0250924
+## [13]  1.7486029         NA         NA -0.3221163  1.5150344 -0.9226099
+## [19]  3.2607937
 ```
 
