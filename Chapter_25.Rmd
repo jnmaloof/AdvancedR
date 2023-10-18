@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(Rcpp)
+library(tidyverse)
 ```
 
 # 25.2 Getting STarted with C++
@@ -1075,7 +1076,7 @@ medianC(1:5)
 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
+// [[Rcpp::export(name = `%inC%`)]]
 LogicalVector inC(CharacterVector x, CharacterVector table) {
   
   int n = x.size();
@@ -1096,15 +1097,201 @@ LogicalVector inC(CharacterVector x, CharacterVector table) {
 x <- LETTERS[1:10]
 table <- LETTERS[5:20]
 x %in% table
-inC(x, table)
+x %inC% table
 ```
 
 
 
 ## 3. unique() using an unordered_set (challenge: do it in one line!).
 
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector uniqueC(NumericVector x){
+  int n = x.size();
+  std::vector<double> uniq ;
+  std::unordered_set<double> seen;
+  
+  for(int i = 0; i < n; ++i) {
+    if(seen.insert(x[i]).second) {
+      uniq.push_back(x[i]);
+    }
+  }
+    return(wrap(uniq));
+}
+```
+
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector uniqueC1L(NumericVector x){
+  std::unordered_set<double> uniq(x.begin(), x.end(), x.size()); 
+  return(wrap(uniq));
+}
+```
+
+```{r}
+x <- sample(1:10, 20, TRUE)
+x
+unique(x)
+uniqueC(x)
+uniqueC1L(x) 
+```
+
 ## 4. min() using std::min(), or max() using std::max().
+
+```{Rcpp}
+#include <Rcpp.h>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double minC(NumericVector x, bool na_rm = false){
+  if(is_true(any(is_na(x)))) {
+    if(na_rm) x = na_omit(x);
+    else return(NA_REAL);
+  }
+  
+  int n = x.size();
+  double out = R_PosInf;
+  
+  for (int i = 0; i < n; ++i) {
+    out = std::min(out, x[i]);
+  }
+return(out);
+}
+```
+
+```{r}
+x <- rnorm(100)
+min(x)
+minC(x)
+```
 
 ## 5. which.min() using min_element, or which.max() using max_element.
 
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export(name=which.minC)]]
+int which_min(NumericVector x){
+  x = na_omit(x);
+  NumericVector::iterator min;
+  
+  min = std::min_element(x.begin(), x.end());
+  
+  return(std::distance(x.begin(), min)+1);
+}
+```
+
+```{r}
+x <- rnorm(100)
+which.min(x)
+which.minC(x)
+```
+
+
 ## 6. setdiff(), union(), and intersect() for integers using sorted ranges and set_union, set_intersection and set_difference.
+
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setdiffC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_difference(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}
+```
+
+```{r}
+x <- sample(1:10)
+y <- sample(6:15)
+x
+y
+setdiff(x,y)
+setdiffC(x,y)
+```
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setunionC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size()+y.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_union(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}
+```
+
+```{r}
+x <- sample(1:10)
+y <- sample(6:15)
+x
+y
+union(x,y)
+setunionC(x,y)
+```
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setintersectionC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size()+y.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_intersection(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}
+```
+
+```{r}
+x <- sample(1:10)
+y <- sample(6:15)
+x
+y
+intersect(x,y)
+setintersectionC(x,y)
+```
+
