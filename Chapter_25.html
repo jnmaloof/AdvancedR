@@ -357,7 +357,18 @@ display: none;
 </div>
 
 
-<pre class="r"><code>library(Rcpp)</code></pre>
+<pre class="r"><code>library(Rcpp)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.0     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.1     ✔ tibble    3.1.8
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.1     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors</code></pre>
 <div id="getting-started-with-c" class="section level1">
 <h1>25.2 Getting STarted with C++</h1>
 <p>use cppFunction() to write a C++ function in R:</p>
@@ -368,7 +379,7 @@ display: none;
 # add works like a regular R function
 add</code></pre>
 <pre><code>## function (x, y, z) 
-## .Call(&lt;pointer: 0x1053b5580&gt;, x, y, z)</code></pre>
+## .Call(&lt;pointer: 0x1076b1580&gt;, x, y, z)</code></pre>
 <pre class="r"><code>#&gt; function (x, y, z) 
 #&gt; .Call(&lt;pointer: 0x107536a00&gt;, x, y, z)
 add(1, 2, 3)</code></pre>
@@ -390,7 +401,7 @@ one()</code></pre>
 <pre><code>## [1] 1</code></pre>
 <pre class="r"><code>one</code></pre>
 <pre><code>## function () 
-## .Call(&lt;pointer: 0x1053d4740&gt;)</code></pre>
+## .Call(&lt;pointer: 0x1076d0740&gt;)</code></pre>
 </div>
 <div id="scalar-input-scalar-output" class="section level2">
 <h2>25.2.2 Scalar input, scalar output</h2>
@@ -440,9 +451,9 @@ bench::mark(sumR(x),
 <pre><code>## # A tibble: 3 × 6
 ##   expression      min   median `itr/sec` mem_alloc `gc/sec`
 ##   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-## 1 sumR(x)    136.96ms 137.38ms      7.27    3.98MB        0
-## 2 sum(x)       14.1ms  14.17ms     70.3         0B        0
-## 3 sumC(x)      8.44ms   8.51ms    117.      2.49KB        0</code></pre>
+## 1 sumR(x)    139.02ms 139.47ms      7.16    26.6KB        0
+## 2 sum(x)       14.1ms   14.4ms     69.5         0B        0
+## 3 sumC(x)      8.56ms   8.68ms    115.      2.49KB        0</code></pre>
 </div>
 <div id="vector-input-vector-output" class="section level2">
 <h2>25.2.5 Vector input, Vector output</h2>
@@ -468,8 +479,8 @@ bench::mark(
 <pre><code>## # A tibble: 2 × 6
 ##   expression          min   median `itr/sec` mem_alloc `gc/sec`
 ##   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-## 1 pdistR(0.5, y)   1.92ms   1.99ms      496.    7.63MB     125.
-## 2 pdistC(0.5, y) 360.19µs 558.79µs     1723.    7.63MB     233.</code></pre>
+## 1 pdistR(0.5, y)   1.64ms   2.06ms      477.    7.63MB     117.
+## 2 pdistC(0.5, y) 356.74µs 594.21µs     1644.    7.63MB     212.</code></pre>
 <pre class="r"><code>#&gt; # A tibble: 2 x 6
 #&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
@@ -700,7 +711,7 @@ NumericVector rangeC(NumericVector x){
 }</code></pre>
 <pre class="r"><code>x &lt;- sample(1:20)
 x</code></pre>
-<pre><code>##  [1]  2 12 11 20  9 10 14  7  3 19 16 18  6  5 15  4 13 17  8  1</code></pre>
+<pre><code>##  [1] 16 17 20  6  8  7  2 18  4 19 14 10 13 12  5 11 15  3  9  1</code></pre>
 <pre class="r"><code>range(x)</code></pre>
 <pre><code>## [1]  1 20</code></pre>
 <pre class="r"><code>rangeC(x)</code></pre>
@@ -733,9 +744,9 @@ double varC(NumericVector x){
 }</code></pre>
 <pre class="r"><code>x &lt;- rnorm(100)
 var(x)</code></pre>
-<pre><code>## [1] 1.074365</code></pre>
+<pre><code>## [1] 1.163644</code></pre>
 <pre class="r"><code>varC(x)</code></pre>
-<pre><code>## [1] 1.074365</code></pre>
+<pre><code>## [1] 1.163644</code></pre>
 </div>
 </div>
 </div>
@@ -971,20 +982,20 @@ double minC(NumericVector x, bool na_rm = false) {
 }</code></pre>
 <pre class="r"><code>x &lt;- rnorm(100)
 min(x)</code></pre>
-<pre><code>## [1] -2.517992</code></pre>
+<pre><code>## [1] -2.83912</code></pre>
 <pre class="r"><code>minC(x)</code></pre>
-<pre><code>## [1] -2.517992</code></pre>
+<pre><code>## [1] -2.83912</code></pre>
 <pre class="r"><code>minC(x, TRUE)</code></pre>
-<pre><code>## [1] -2.517992</code></pre>
+<pre><code>## [1] -2.83912</code></pre>
 <pre class="r"><code>x[50] &lt;- NA
 min(x)</code></pre>
 <pre><code>## [1] NA</code></pre>
 <pre class="r"><code>min(x, na.rm = TRUE)</code></pre>
-<pre><code>## [1] -2.517992</code></pre>
+<pre><code>## [1] -2.83912</code></pre>
 <pre class="r"><code>minC(x)</code></pre>
 <pre><code>## [1] NA</code></pre>
 <pre class="r"><code>minC(x, na_rm = TRUE)</code></pre>
-<pre><code>## [1] -2.517992</code></pre>
+<pre><code>## [1] -2.83912</code></pre>
 <div id="range-1" class="section level4">
 <h4>Range</h4>
 <pre class="cpp"><code># include &lt;Rcpp.h&gt;
@@ -1018,18 +1029,18 @@ NumericVector rangeC(NumericVector x, bool na_rm = false){
 }</code></pre>
 <pre class="r"><code>x &lt;- rnorm(100)
 range(x)</code></pre>
-<pre><code>## [1] -1.842712  3.291668</code></pre>
+<pre><code>## [1] -2.107926  2.254143</code></pre>
 <pre class="r"><code>rangeC(x)</code></pre>
-<pre><code>## [1] -1.842712  3.291668</code></pre>
+<pre><code>## [1] -2.107926  2.254143</code></pre>
 <pre class="r"><code>x[50] &lt;- NA
 range(x)</code></pre>
 <pre><code>## [1] NA NA</code></pre>
 <pre class="r"><code>rangeC(x)</code></pre>
 <pre><code>## [1] NA NA</code></pre>
 <pre class="r"><code>range(x, na.rm=TRUE)</code></pre>
-<pre><code>## [1] -1.842712  3.291668</code></pre>
+<pre><code>## [1] -2.107926  2.254143</code></pre>
 <pre class="r"><code>rangeC(x, na_rm = TRUE)</code></pre>
-<pre><code>## [1] -1.842712  3.291668</code></pre>
+<pre><code>## [1] -2.107926  2.254143</code></pre>
 </div>
 <div id="mean" class="section level4">
 <h4>mean</h4>
@@ -1059,18 +1070,18 @@ double meanC(NumericVector x, bool na_rm = false){
 }</code></pre>
 <pre class="r"><code>x &lt;- rnorm(100)
 mean(x)</code></pre>
-<pre><code>## [1] -0.0636123</code></pre>
+<pre><code>## [1] 0.01707162</code></pre>
 <pre class="r"><code>meanC(x)</code></pre>
-<pre><code>## [1] -0.0636123</code></pre>
+<pre><code>## [1] 0.01707162</code></pre>
 <pre class="r"><code>x[30] &lt;- NaN
 mean(x)</code></pre>
 <pre><code>## [1] NaN</code></pre>
 <pre class="r"><code>meanC(x)</code></pre>
 <pre><code>## [1] NA</code></pre>
 <pre class="r"><code>mean(x, na.rm = TRUE)</code></pre>
-<pre><code>## [1] -0.04955349</code></pre>
+<pre><code>## [1] 0.01333287</code></pre>
 <pre class="r"><code>meanC(x, na_rm = TRUE)</code></pre>
-<pre><code>## [1] -0.04955349</code></pre>
+<pre><code>## [1] 0.01333287</code></pre>
 <p>Alternate, using na_omit</p>
 <pre class="cpp"><code># include &lt;Rcpp.h&gt;
 using namespace Rcpp;
@@ -1094,18 +1105,18 @@ double meanC2(NumericVector x, bool na_rm = false){
 }</code></pre>
 <pre class="r"><code>x &lt;- rnorm(100)
 mean(x)</code></pre>
-<pre><code>## [1] 0.01121501</code></pre>
+<pre><code>## [1] -0.08023769</code></pre>
 <pre class="r"><code>meanC2(x)</code></pre>
-<pre><code>## [1] 0.01121501</code></pre>
+<pre><code>## [1] -0.08023769</code></pre>
 <pre class="r"><code>x[30] &lt;- NaN
 mean(x)</code></pre>
 <pre><code>## [1] NaN</code></pre>
 <pre class="r"><code>meanC2(x)</code></pre>
 <pre><code>## [1] NA</code></pre>
 <pre class="r"><code>mean(x, na.rm = TRUE)</code></pre>
-<pre><code>## [1] -0.0001017236</code></pre>
+<pre><code>## [1] -0.08518587</code></pre>
 <pre class="r"><code>meanC2(x, na_rm = TRUE)</code></pre>
-<pre><code>## [1] -0.0001017236</code></pre>
+<pre><code>## [1] -0.08518587</code></pre>
 </div>
 </div>
 <div id="rewrite-cumsum-and-diff-so-they-can-handle-missing-values.-note-that-these-functions-have-slightly-more-complicated-behaviour." class="section level3">
@@ -1143,14 +1154,14 @@ NumericVector cumsumC(NumericVector x) {
 <pre class="r"><code>x &lt;- rnorm(20, 10)
 x[15] &lt;- NA
 cumsum(x)</code></pre>
-<pre><code>##  [1]   9.032548  19.145673  29.902298  39.101266  49.692950  58.811062
-##  [7]  69.155170  80.905577  89.463995 100.019770 111.590377 122.712648
-## [13] 132.591415 141.528664         NA         NA         NA         NA
+<pre><code>##  [1]   9.711845  18.774889  28.258956  38.674568  48.384743  57.613057
+##  [7]  68.312107  78.699230  89.994927  98.957327 108.815375 120.587027
+## [13] 131.812228 143.045316         NA         NA         NA         NA
 ## [19]         NA         NA</code></pre>
 <pre class="r"><code>cumsumC(x)</code></pre>
-<pre><code>##  [1]   9.032548  19.145673  29.902298  39.101266  49.692950  58.811062
-##  [7]  69.155170  80.905577  89.463995 100.019770 111.590377 122.712648
-## [13] 132.591415 141.528664         NA         NA         NA         NA
+<pre><code>##  [1]   9.711845  18.774889  28.258956  38.674568  48.384743  57.613057
+##  [7]  68.312107  78.699230  89.994927  98.957327 108.815375 120.587027
+## [13] 131.812228 143.045316         NA         NA         NA         NA
 ## [19]         NA         NA</code></pre>
 </div>
 </div>
@@ -1188,16 +1199,427 @@ NumericVector diffC(NumericVector x, int lag = 1) {
 <pre class="r"><code>x &lt;- rnorm(20, 10)
 x[15] &lt;- NA
 diff(x)</code></pre>
-<pre><code>##  [1]  0.7330773 -0.7557204 -1.7216703  0.2949422  0.5100427  0.3153265
-##  [7] -1.4066663  0.7686268 -0.8292127  3.3512770 -1.7563712 -1.0250924
-## [13]  1.7486029         NA         NA -0.3221163  1.5150344 -0.9226099
-## [19]  3.2607937</code></pre>
+<pre><code>##  [1]  2.91753541 -1.50333086 -0.44096225  2.03388136 -1.26879839  0.65236981
+##  [7] -0.59576361 -0.20961635 -0.89545853  1.53088402 -0.42058809  0.09334168
+## [13]  0.21846647          NA          NA -0.80105816 -0.10431032  0.89954748
+## [19]  1.23913199</code></pre>
 <pre class="r"><code>diffC(x)</code></pre>
-<pre><code>##  [1]  0.7330773 -0.7557204 -1.7216703  0.2949422  0.5100427  0.3153265
-##  [7] -1.4066663  0.7686268 -0.8292127  3.3512770 -1.7563712 -1.0250924
-## [13]  1.7486029         NA         NA -0.3221163  1.5150344 -0.9226099
-## [19]  3.2607937</code></pre>
+<pre><code>##  [1]  2.91753541 -1.50333086 -0.44096225  2.03388136 -1.26879839  0.65236981
+##  [7] -0.59576361 -0.20961635 -0.89545853  1.53088402 -0.42058809  0.09334168
+## [13]  0.21846647          NA          NA -0.80105816 -0.10431032  0.89954748
+## [19]  1.23913199</code></pre>
 </div>
+</div>
+</div>
+<div id="standard-template-library" class="section level1">
+<h1>25.5 Standard Template Library</h1>
+<div id="using-iterators" class="section level2">
+<h2>25.5.1 Using Iterators</h2>
+<ul>
+<li>Advance with <code>++</code></li>
+<li>dereference with <code>*</code></li>
+<li>compare with <code>==</code></li>
+</ul>
+<p>For example:</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double sum3(NumericVector x) {
+  double total = 0;
+  
+  NumericVector::iterator it;
+  for(it = x.begin(); it != x.end(); ++it) {
+    Rcout &lt;&lt; *it &lt;&lt; &quot; &quot;;
+    total += *it;
+  }
+  return total;
+}</code></pre>
+<pre class="r"><code>sum3(10:1)</code></pre>
+<pre><code>## 10 9 8 7 6 5 4 3 2 1</code></pre>
+<pre><code>## [1] 55</code></pre>
+<p>Or using accumulate</p>
+<pre class="cpp"><code>#include &lt;numeric&gt;
+#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double sum5(NumericVector x) {
+  return std::accumulate(x.begin(), x.end(), 0.0);
+}</code></pre>
+<pre class="r"><code>sum5(10:1)</code></pre>
+<pre><code>## [1] 55</code></pre>
+</div>
+<div id="algorithims." class="section level2">
+<h2>25.5.2 Algorithims.</h2>
+<p>The algorithm header provides a large number of iterator functions.
+Consider:</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector findInterval2(NumericVector x, NumericVector breaks) {
+  IntegerVector out(x.size());
+
+  NumericVector::iterator it, pos;
+  IntegerVector::iterator out_it;
+
+  for(it = x.begin(), out_it = out.begin(); it != x.end(); 
+      ++it, ++out_it) {
+    pos = std::upper_bound(breaks.begin(), breaks.end(), *it);
+    *out_it = std::distance(breaks.begin(), pos);
+    Rcout &lt;&lt; *pos &lt;&lt; &quot; &quot; &lt;&lt; *out_it &lt;&lt; std::endl;
+  }
+
+  return out;
+}
+</code></pre>
+<pre class="r"><code>findInterval2(1:10, c(0,3,6,10))</code></pre>
+<pre><code>## 3 1
+## 3 1
+## 6 2
+## 6 2
+## 6 2
+## 10 3
+## 10 3
+## 10 3
+## 10 3
+## 2.91774e-314 4</code></pre>
+<pre><code>##  [1] 1 1 2 2 2 3 3 3 3 4</code></pre>
+</div>
+<div id="data-structures." class="section level2">
+<h2>25.5.3 Data structures.</h2>
+<p>There are a bunch of them. Perhaps most useful are
+<code>vector</code>, <code>unordered_set</code>, and
+<code>unordered_map</code></p>
+</div>
+<div id="vectors-1" class="section level2">
+<h2>25.5.4 Vectors</h2>
+<p>can access with vect[]. Can add to the end with vect.push_back()</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+List rleC(NumericVector x) {
+  std::vector&lt;int&gt; lengths;
+  std::vector&lt;double&gt; values;
+
+  // Initialise first value
+  int i = 0;
+  double prev = x[0];
+  values.push_back(prev);
+  lengths.push_back(1);
+
+  NumericVector::iterator it;
+  for(it = x.begin() + 1; it != x.end(); ++it) {
+    if (prev == *it) {
+      lengths[i]++;
+    } else {
+      values.push_back(*it);
+      lengths.push_back(1);
+
+      i++;
+      prev = *it;
+    }
+  }
+
+  return List::create(
+    _[&quot;lengths&quot;] = lengths, 
+    _[&quot;values&quot;] = values
+  );
+}</code></pre>
+</div>
+<div id="set" class="section level2">
+<h2>set</h2>
+</div>
+<div id="map" class="section level2">
+<h2>map</h2>
+<p>a map has a key and value pair</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+std::map&lt;double, int&gt; tableC(NumericVector x) {
+  std::map&lt;double, int&gt; counts;
+
+  int n = x.size();
+  for (int i = 0; i &lt; n; i++) {
+    counts[x[i]]++;
+  }
+
+  return counts;
+}</code></pre>
+<pre class="r"><code>tableC(sample(1:10,100,TRUE))</code></pre>
+<pre><code>##  1  2  3  4  5  6  7  8  9 10 
+##  7  5 11 11  6 12  9  8 16 15</code></pre>
+</div>
+</div>
+<div id="exercises-2" class="section level1">
+<h1>25.5.7 Exercises</h1>
+<p>To practice using the STL algorithms and data structures, implement
+the following using R functions in C++, using the hints provided:</p>
+<div id="median.default-using-partial_sort." class="section level2">
+<h2>1. median.default() using partial_sort.</h2>
+<p>First let’s get a handle on partial sort</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector psortC(NumericVector x) {
+  std::partial_sort(x.begin(), x.begin() + 5, x.end());
+  return(x);
+}</code></pre>
+<pre class="r"><code>x &lt;- sample(1:20)
+x</code></pre>
+<pre><code>##  [1] 17 18 16  5 11  8 15  2  4  6 10 13  3  7 20 19 12  1  9 14</code></pre>
+<pre class="r"><code>psortC(x)</code></pre>
+<pre><code>##  [1]  1  2  3  4  5 18 17 16 15 11 10 13  8  7 20 19 12  6  9 14</code></pre>
+<p>okay, so we can just sort the first half of the vector.</p>
+<p>note that std::partial_sort modified in place</p>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double medianC(NumericVector x) {
+  int n = x.size();
+  
+  std::partial_sort(x.begin(), x.begin() + (n/2) + 1, x.end());
+  
+  if(n%2 == 0) { // even sized vector, need to get two values and average
+    --n; // because vectors are zero indexed
+    return( (x[n/2] + x[n/2+1]) / 2 );
+  } else {
+    --n; // because vectors are zero indexed
+    return(x[(n+1)/2]);
+  }
+}
+</code></pre>
+<pre class="r"><code>median(1:4)</code></pre>
+<pre><code>## [1] 2.5</code></pre>
+<pre class="r"><code>medianC(1:4)</code></pre>
+<pre><code>## [1] 2.5</code></pre>
+<pre class="r"><code>median(1:5)</code></pre>
+<pre><code>## [1] 3</code></pre>
+<pre class="r"><code>medianC(1:5)</code></pre>
+<pre><code>## [1] 3</code></pre>
+</div>
+<div id="in-using-unordered_set-and-the-find-or-count-methods." class="section level2">
+<h2>2. %in% using unordered_set and the find() or count() methods.</h2>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export(name = `%inC%`)]]
+LogicalVector inC(CharacterVector x, CharacterVector table) {
+  
+  int n = x.size();
+
+  LogicalVector results(n);
+  std::unordered_set&lt;String&gt; table_set(table.begin(), table.end(), table.size());
+  
+  for(int i = 0; i &lt; n; ++i) {
+    // Rcout &lt;&lt; i &lt;&lt; &quot; &quot; &lt;&lt; x[i] &lt;&lt; &quot; &quot; &lt;&lt; (table_set.count(x[i]) &gt; 0) &lt;&lt; std::endl;
+    results[i] = (table_set.count(x[i]) &gt; 0);
+  }
+
+  return(results);
+  }</code></pre>
+<pre class="r"><code>x &lt;- LETTERS[1:10]
+table &lt;- LETTERS[5:20]
+x %in% table</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
+<pre class="r"><code>x %inC% table</code></pre>
+<pre><code>##  [1] FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
+</div>
+<div id="unique-using-an-unordered_set-challenge-do-it-in-one-line." class="section level2">
+<h2>3. unique() using an unordered_set (challenge: do it in one
+line!).</h2>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector uniqueC(NumericVector x){
+  int n = x.size();
+  std::vector&lt;double&gt; uniq ;
+  std::unordered_set&lt;double&gt; seen;
+  
+  for(int i = 0; i &lt; n; ++i) {
+    if(seen.insert(x[i]).second) {
+      uniq.push_back(x[i]);
+    }
+  }
+    return(wrap(uniq));
+}</code></pre>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector uniqueC1L(NumericVector x){
+  std::unordered_set&lt;double&gt; uniq(x.begin(), x.end(), x.size()); 
+  return(wrap(uniq));
+}</code></pre>
+<pre class="r"><code>x &lt;- sample(1:10, 20, TRUE)
+x</code></pre>
+<pre><code>##  [1]  1  5  3  9  3  3  7  8  1  7  3  7  5  3  7  8  7 10  8  4</code></pre>
+<pre class="r"><code>unique(x)</code></pre>
+<pre><code>## [1]  1  5  3  9  7  8 10  4</code></pre>
+<pre class="r"><code>uniqueC(x)</code></pre>
+<pre><code>## [1]  1  5  3  9  7  8 10  4</code></pre>
+<pre class="r"><code>uniqueC1L(x) </code></pre>
+<pre><code>## [1]  4 10  8  7  9  3  5  1</code></pre>
+</div>
+<div id="min-using-stdmin-or-max-using-stdmax." class="section level2">
+<h2>4. min() using std::min(), or max() using std::max().</h2>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double minC(NumericVector x, bool na_rm = false){
+  if(is_true(any(is_na(x)))) {
+    if(na_rm) x = na_omit(x);
+    else return(NA_REAL);
+  }
+  
+  int n = x.size();
+  double out = R_PosInf;
+  
+  for (int i = 0; i &lt; n; ++i) {
+    out = std::min(out, x[i]);
+  }
+return(out);
+}</code></pre>
+<pre class="r"><code>x &lt;- rnorm(100)
+min(x)</code></pre>
+<pre><code>## [1] -2.525875</code></pre>
+<pre class="r"><code>minC(x)</code></pre>
+<pre><code>## [1] -2.525875</code></pre>
+</div>
+<div id="which.min-using-min_element-or-which.max-using-max_element." class="section level2">
+<h2>5. which.min() using min_element, or which.max() using
+max_element.</h2>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export(name=which.minC)]]
+int which_min(NumericVector x){
+  x = na_omit(x);
+  NumericVector::iterator min;
+  
+  min = std::min_element(x.begin(), x.end());
+  
+  return(std::distance(x.begin(), min)+1);
+}</code></pre>
+<pre class="r"><code>x &lt;- rnorm(100)
+which.min(x)</code></pre>
+<pre><code>## [1] 36</code></pre>
+<pre class="r"><code>which.minC(x)</code></pre>
+<pre><code>## [1] 36</code></pre>
+</div>
+<div id="setdiff-union-and-intersect-for-integers-using-sorted-ranges-and-set_union-set_intersection-and-set_difference." class="section level2">
+<h2>6. setdiff(), union(), and intersect() for integers using sorted
+ranges and set_union, set_intersection and set_difference.</h2>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setdiffC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_difference(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}</code></pre>
+<pre class="r"><code>x &lt;- sample(1:10)
+y &lt;- sample(6:15)
+x</code></pre>
+<pre><code>##  [1]  1  7  9  8  4  6  2  5  3 10</code></pre>
+<pre class="r"><code>y</code></pre>
+<pre><code>##  [1] 10  6  9 15  7 12  8 14 13 11</code></pre>
+<pre class="r"><code>setdiff(x,y)</code></pre>
+<pre><code>## [1] 1 4 2 5 3</code></pre>
+<pre class="r"><code>setdiffC(x,y)</code></pre>
+<pre><code>## [1] 1 2 3 4 5</code></pre>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setunionC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size()+y.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_union(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}</code></pre>
+<pre class="r"><code>x &lt;- sample(1:10)
+y &lt;- sample(6:15)
+x</code></pre>
+<pre><code>##  [1]  1  9  4  6  8  7  5  2  3 10</code></pre>
+<pre class="r"><code>y</code></pre>
+<pre><code>##  [1] 11  7  6 15 12 10  9  8 14 13</code></pre>
+<pre class="r"><code>union(x,y)</code></pre>
+<pre><code>##  [1]  1  9  4  6  8  7  5  2  3 10 11 15 12 14 13</code></pre>
+<pre class="r"><code>setunionC(x,y)</code></pre>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15</code></pre>
+<pre class="cpp"><code>#include &lt;Rcpp.h&gt;
+#include &lt;algorithm&gt;
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+IntegerVector setintersectionC(IntegerVector x, IntegerVector y) {
+  IntegerVector out(x.size()+y.size());
+  x.sort();
+  y.sort();
+  
+  out.fill(NA_INTEGER);
+  
+  std::set_intersection(x.begin(), x.end(), y.begin(), y.end(), out.begin());
+  
+  out = na_omit(out);
+  
+  return(out);
+}</code></pre>
+<pre class="r"><code>x &lt;- sample(1:10)
+y &lt;- sample(6:15)
+x</code></pre>
+<pre><code>##  [1]  5  7  9  8  3  4  6 10  1  2</code></pre>
+<pre class="r"><code>y</code></pre>
+<pre><code>##  [1] 12 15  7 13 10  6  8 14 11  9</code></pre>
+<pre class="r"><code>intersect(x,y)</code></pre>
+<pre><code>## [1]  7  9  8  6 10</code></pre>
+<pre class="r"><code>setintersectionC(x,y)</code></pre>
+<pre><code>## [1]  6  7  8  9 10</code></pre>
 </div>
 </div>
 

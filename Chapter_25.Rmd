@@ -906,8 +906,8 @@ sum5(10:1)
 The algorithm header provides a large number of iterator functions.  Consider:
 
 ```{Rcpp}
-#include <algorithm>
 #include <Rcpp.h>
+#include <algorithm>
 using namespace Rcpp;
 
 // [[Rcpp::export]]
@@ -921,7 +921,7 @@ IntegerVector findInterval2(NumericVector x, NumericVector breaks) {
       ++it, ++out_it) {
     pos = std::upper_bound(breaks.begin(), breaks.end(), *it);
     *out_it = std::distance(breaks.begin(), pos);
-    Rcout *pos << " " << *out_it << std::endl;
+    Rcout << *pos << " " << *out_it << std::endl;
   }
 
   return out;
