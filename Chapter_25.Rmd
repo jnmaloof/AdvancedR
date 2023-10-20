@@ -1138,12 +1138,26 @@ NumericVector uniqueC1L(NumericVector x){
 }
 ```
 
+```{Rcpp}
+#include <Rcpp.h>
+#include <algorithm>
+
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector uniqueC1L2(NumericVector x){
+  std::set<double> uniq(x.begin(), x.end()); 
+  return(wrap(uniq));
+}
+```
+
 ```{r}
 x <- sample(1:10, 20, TRUE)
 x
 unique(x)
 uniqueC(x)
 uniqueC1L(x) 
+uniqueC1L2(x)
 ```
 
 ## 4. min() using std::min(), or max() using std::max().
